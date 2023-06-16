@@ -14,5 +14,8 @@
     "**/docs/examples/",
     "**/docs/modules/*.ts.md"
   ],
-  "words": []
+  "words": [
+    "epolog",
+    "pmarsceill"
+  ]
 }

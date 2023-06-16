@@ -1,6 +1,6 @@
 /**
  * A `Wrapper<F>` is a function that can be used to wrap a function with
- * statefull operations.
+ * stateful operations.
  *
  * @example
  * import { log } from 'fp-ts/lib/Console';
