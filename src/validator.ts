@@ -11,7 +11,7 @@
  * @example
  * import * as t from 'io-ts';
  * import { isLeft, isRight } from 'fp-ts/lib/Either';
- * import { pipe } from 'fp-ts/lib/funciton';
+ * import { pipe } from 'fp-ts/lib/function';
  *
  * const UserCodec = t.type({
  * name: t.string,
