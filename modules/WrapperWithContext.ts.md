@@ -7,7 +7,7 @@ parent: Modules
 ## WrapperWithContext overview
 
 A `Wrapper<F>` is a function that can be used to wrap a function with
-statefull operations.
+stateful operations.
 
 **Example**
 
