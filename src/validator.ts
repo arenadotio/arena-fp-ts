@@ -12,6 +12,7 @@
  * import * as t from 'io-ts';
  * import { isLeft, isRight } from 'fp-ts/lib/Either';
  * import { pipe } from 'fp-ts/lib/function';
+ * import { fromCodec } from 'arena-fp-ts/validator';
  *
  * const UserCodec = t.type({
  * name: t.string,
@@ -29,8 +30,8 @@
  *   fromCodec(UserCodec),
  * );  // unknown => t.Validation<string>
  *
- * assert.deepStrictEqual(isRight(f2(ValidUser)), true);
- * assert.deepStrictEqual(isLeft(f2(InvalidUser)), true);
+ * assert.deepStrictEqual(isRight(f2(ValidUser as any)), true);
+ * assert.deepStrictEqual(isLeft(f2(InvalidUser as any)), true);
  *
  * @since 0.0.1
  */
