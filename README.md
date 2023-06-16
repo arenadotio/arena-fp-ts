@@ -1,8 +1,6 @@
 # arena-fp-ts
 
-[![Test](&#x2F;actions&#x2F;workflows&#x2F;build.yml&#x2F;badge.svg)](&#x2F;actions&#x2F;workflows&#x2F;build.yml)
-
-[API Docs]()
+[API Docs](https://arenadotio.github.io/arena-fp-ts/)
 
 ---
 
