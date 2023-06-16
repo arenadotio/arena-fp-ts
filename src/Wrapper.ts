@@ -5,8 +5,9 @@
  * @example
  * import { log } from 'fp-ts/lib/Console';
  * import { IO, Apply } from 'fp-ts/lib/IO';
+ * import { wrapT } from 'arena-fp-ts/Wrapper';
  *
- * const sqr = (x: number): x * x;
+ * const sqr = (x: number) => x * x;
  *
  * // I create a wrapper for the type I want by passing in an Apply instance
  * const wrapper = wrapT(Apply);
@@ -17,11 +18,11 @@
  *
  * const wrappedFn = wrapper(
  *  log('About to call sqr'),
- *  sqr(5),
+ *  liftSqr(5),
  *  log('Finished sqr'),
  * );
  *
- * assert.deepStrictEquals(wrappedFn(), 25) // log messages sent to console
+ * assert.deepStrictEqual(wrappedFn(), 25) // log messages sent to console
  *
  * @since 0.0.1
  */

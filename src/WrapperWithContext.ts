@@ -5,8 +5,9 @@
  * @example
  * import { log } from 'fp-ts/lib/Console';
  * import { IO, Chain } from 'fp-ts/lib/IO';
+ * import { wrapWithContextT } from 'arena-fp-ts/WrapperWithContext';
  *
- * const sqr = (x: number): x * x;
+ * const sqr = (x: number) => x * x;
  *
  * // I create a wrapper for the type I want by passing in an Chain instance
  * const wrapper = wrapWithContextT(Chain);
@@ -15,13 +16,15 @@
  * // so I need to lift `sqr` into an `IO<number>`.
  * const liftSqr: (x: number) => IO<number> = (x) => () => sqr(x);
  *
- *  const wrappedWithContextFn = contextWrapper(
+ * const wrappedWithContextFn = wrapper(
  *   (x) => log(`Going to find the sqr of ${x}`),
- *   sqr,
+ *   liftSqr,
  *   (x, y) => log(`sqr of ${x} is ${y}`)
  * );
  *
- * assert.deepStrictEquals(wrappedWithContextFn(5), 25) // log messages sent to console
+ * const fn = wrappedWithContextFn(5)
+ *
+ * assert.deepStrictEqual(fn(), 25) // log messages sent to console
  *
  * @since 0.0.1
  */
@@ -40,7 +43,7 @@ import { flow, pipe } from "fp-ts/lib/function";
  */
 export interface WrapperWithContext<F> {
     <A, B>(prolog: (a: A) => HKT<F, any>, ma: (a: A) => HKT<F, B>): (a: A) => HKT<F, B>;
-    <A, B>(prolog: (a: A) => HKT<F, any>, ma: (a: A) => HKT<F, B>, epolog: (a: A) => HKT<F, any>): (a: A) => HKT<F, B>;
+    <A, B>(prolog: (a: A) => HKT<F, any>, ma: (a: A) => HKT<F, B>, epolog: (a: A, b: B) => HKT<F, any>): (a: A) => HKT<F, B>;
 }
 
 /**
@@ -49,7 +52,7 @@ export interface WrapperWithContext<F> {
  */
 export interface WrapperWithContext1<F extends URIS> {
     <A, B>(prolog: (a: A) => Kind<F, any>, ma: (a: A) => Kind<F, B>): (a: A) => Kind<F, B>;
-    <A, B>(prolog: (a: A) => Kind<F, any>, ma: (a: A) => Kind<F, B>, epolog: (a: A) => Kind<F, any>): (a: A) => Kind<F, B>;
+    <A, B>(prolog: (a: A) => Kind<F, any>, ma: (a: A) => Kind<F, B>, epolog: (a: A, b: B) => Kind<F, any>): (a: A) => Kind<F, B>;
 }
 
 /**
@@ -58,7 +61,7 @@ export interface WrapperWithContext1<F extends URIS> {
  */
 export interface WrapperWithContext2<F extends URIS2> {
     <E, A, B>(prolog: (a: A) => Kind2<F, E, any>, ma: (a: A) => Kind2<F, E, B>): (a: A) => Kind2<F, E, B>;
-    <E, A, B>(prolog: (a: A) => Kind2<F, E, any>, ma: (a: A) => Kind2<F, E, B>, epolog: (a: A) => Kind2<F, E, any>): (a: A) => Kind2<F, E, B>;
+    <E, A, B>(prolog: (a: A) => Kind2<F, E, any>, ma: (a: A) => Kind2<F, E, B>, epolog: (a: A, b: B) => Kind2<F, E, any>): (a: A) => Kind2<F, E, B>;
 }
 
 /**
@@ -67,7 +70,7 @@ export interface WrapperWithContext2<F extends URIS2> {
  */
 export interface WrapperWithContext2C<F extends URIS2, E> {
     <A, B>(prolog: (a: A) => Kind2<F, E, any>, ma: (a: A) => Kind2<F, E, B>): (a: A) => Kind2<F, E, B>;
-    <A, B>(prolog: (a: A) => Kind2<F, E, any>, ma: (a: A) => Kind2<F, E, B>, epolog: (a: A) => Kind2<F, E, any>): (a: A) => Kind2<F, E, B>;
+    <A, B>(prolog: (a: A) => Kind2<F, E, any>, ma: (a: A) => Kind2<F, E, B>, epolog: (a: A, b: B) => Kind2<F, E, any>): (a: A) => Kind2<F, E, B>;
 }
 
 /**
@@ -76,7 +79,7 @@ export interface WrapperWithContext2C<F extends URIS2, E> {
  */
 export interface WrapperWithContext3<F extends URIS3> {
     <R, E, A, B>(prolog: (a: A) => Kind3<F, R, E, any>, ma: (a: A) => Kind3<F, R, E, B>): (a: A) => Kind3<F, R, E, B>;
-    <R, E, A, B>(prolog: (a: A) => Kind3<F, R, E, any>, ma: (a: A) => Kind3<F, R, E, B>, epolog: (a: A) => Kind3<F, R, E, any>): (a: A) => Kind3<F, R, E, B>;
+    <R, E, A, B>(prolog: (a: A) => Kind3<F, R, E, any>, ma: (a: A) => Kind3<F, R, E, B>, epolog: (a: A, b: B) => Kind3<F, R, E, any>): (a: A) => Kind3<F, R, E, B>;
 }
 
 /**
@@ -85,7 +88,7 @@ export interface WrapperWithContext3<F extends URIS3> {
  */
 export interface WrapperWithContext3C<F extends URIS3, E> {
     <R, A, B>(prolog: (a: A) => Kind3<F, R, E, any>, ma: (a: A) => Kind3<F, R, E, B>): (a: A) => Kind3<F, R, E, B>;
-    <R, A, B>(prolog: (a: A) => Kind3<F, R, E, any>, ma: (a: A) => Kind3<F, R, E, B>, epolog: (a: A) => Kind3<F, R, E, any>): (a: A) => Kind3<F, R, E, B>;
+    <R, A, B>(prolog: (a: A) => Kind3<F, R, E, any>, ma: (a: A) => Kind3<F, R, E, B>, epolog: (a: A, b: B) => Kind3<F, R, E, any>): (a: A) => Kind3<F, R, E, B>;
 }
 
 /**
@@ -94,7 +97,7 @@ export interface WrapperWithContext3C<F extends URIS3, E> {
  */
 export interface WrapperWithContext4<F extends URIS4> {
     <S, R, E, A, B>(prolog: (a: A) => Kind4<F, S, R, E, any>, ma: (a: A) => Kind4<F, S, R, E, B>): (a: A) => Kind4<F, S, R, E, B>;
-    <S, R, E, A, B>(prolog: (a: A) => Kind4<F, S, R, E, any>, ma: (a: A) => Kind4<F, S, R, E, B>, epolog: (a: A) => Kind4<F, S, R, E, any>): (a: A) => Kind4<F, S, R, E, B>;
+    <S, R, E, A, B>(prolog: (a: A) => Kind4<F, S, R, E, any>, ma: (a: A) => Kind4<F, S, R, E, B>, epolog: (a: A, b: B) => Kind4<F, S, R, E, any>): (a: A) => Kind4<F, S, R, E, B>;
 }
 
 /**
