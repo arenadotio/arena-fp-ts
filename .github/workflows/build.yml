@@ -38,6 +38,8 @@ jobs:
         run: yarn install
       - name: Generate docs
         run: yarn run docs
+      - name: Spell check
+        run: yarn run spell
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.0.0
         with:
