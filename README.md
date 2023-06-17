@@ -28,7 +28,7 @@ npm install fp-ts arena-fp-ts
 ## Example
 
 ```ts
-import * as Lib from 'arena-fp-ts'
+import * as Lib from 'arena-fp-ts';
 
 // write an example...
 ```
