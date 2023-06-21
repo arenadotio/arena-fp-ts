@@ -14,5 +14,10 @@
     "**/docs/examples/",
     "**/docs/modules/*.ts.md"
   ],
-  "words": ["epolog", "pmarsceill", "pino"]
+  "words": [
+    "epolog",
+    "pmarsceill",
+    "arenadotio",
+    "npmrc"
+  ]
 }
