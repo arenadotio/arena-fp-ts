@@ -167,13 +167,13 @@ export interface WrapperWithContext4<F extends URIS4> {
  * @category type lambdas
  * @since 0.0.1
  */
-export const URI = 'WrapperWithContext'
+export const URI = 'WrapperWithContext';
 
 /**
  * @category type lambdas
  * @since 0.0.1
  */
-export type URI = typeof URI
+export type URI = typeof URI;
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
@@ -220,16 +220,16 @@ export function wrapWithContextT<F extends URIS>(F: Chain<F>): any {
       (a: A) => [prolog(a), f(a)] as const,
       (args) => sequenceT(F)(...args),
       (m) => F.map(m, ([_first, second]) => second)
-    )
+    );
 
     if (epolog) {
       const epologC = (a: A) => (b: B) =>
-        pipe(epolog(a, b), (m) => F.map(m, (_) => b))
-      return (a: A) => pipe(a, part1, (mb) => F.chain(mb, epologC(a)))
+        pipe(epolog(a, b), (m) => F.map(m, (_) => b));
+      return (a: A) => pipe(a, part1, (mb) => F.chain(mb, epologC(a)));
     } else {
-      return part1
+      return part1;
     }
-  }
+  };
 
-  return fn
+  return fn;
 }
