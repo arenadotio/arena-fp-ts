@@ -21,6 +21,7 @@
     "semigroup",
     "monoid",
     "arenadotio",
-    "npmrc"
+    "npmrc",
+    "pino"
   ]
 }

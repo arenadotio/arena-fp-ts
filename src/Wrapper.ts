@@ -58,8 +58,8 @@ import {
  * @since 0.0.1
  */
 export interface Wrapper<F> {
-  <A>(prolog: HKT<F, any>, ma: HKT<F, A>): HKT<F, A>
-  <A>(prolog: HKT<F, any>, ma: HKT<F, A>, epolog: HKT<F, any>): HKT<F, A>
+  <A>(prolog: HKT<F, any>, ma: HKT<F, A>): HKT<F, A>;
+  <A>(prolog: HKT<F, any>, ma: HKT<F, A>, epolog: HKT<F, any>): HKT<F, A>;
 }
 
 /**
@@ -67,8 +67,8 @@ export interface Wrapper<F> {
  * @since 0.0.1
  */
 export interface Wrapper1<F extends URIS> {
-  <A>(prolog: Kind<F, any>, ma: Kind<F, A>): Kind<F, A>
-  <A>(prolog: Kind<F, any>, ma: Kind<F, A>, epolog: Kind<F, any>): Kind<F, A>
+  <A>(prolog: Kind<F, any>, ma: Kind<F, A>): Kind<F, A>;
+  <A>(prolog: Kind<F, any>, ma: Kind<F, A>, epolog: Kind<F, any>): Kind<F, A>;
 }
 
 /**
@@ -151,13 +151,13 @@ export interface Wrapper4<F extends URIS4> {
  * @category type lambdas
  * @since 0.0.1
  */
-export const URI = 'Wrapper'
+export const URI = 'Wrapper';
 
 /**
  * @category type lambdas
  * @since 0.0.1
  */
-export type URI = typeof URI
+export type URI = typeof URI;
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
@@ -173,25 +173,25 @@ declare module 'fp-ts/lib/HKT' {
  * @category utils
  * @since 0.0.1
  */
-export function wrapT<F extends URIS4>(F: Apply4<F>): Wrapper4<F>
-export function wrapT<F extends URIS3>(F: Apply3<F>): Wrapper3<F>
-export function wrapT<F extends URIS3, E>(F: Apply3C<F, E>): Wrapper3C<F, E>
-export function wrapT<F extends URIS2>(F: Apply2<F>): Wrapper2<F>
-export function wrapT<F extends URIS2, E>(F: Apply2C<F, E>): Wrapper2C<F, E>
-export function wrapT<F extends URIS>(F: Apply1<F>): Wrapper1<F>
-export function wrapT<F extends URIS>(F: Apply<F>): Wrapper<F>
+export function wrapT<F extends URIS4>(F: Apply4<F>): Wrapper4<F>;
+export function wrapT<F extends URIS3>(F: Apply3<F>): Wrapper3<F>;
+export function wrapT<F extends URIS3, E>(F: Apply3C<F, E>): Wrapper3C<F, E>;
+export function wrapT<F extends URIS2>(F: Apply2<F>): Wrapper2<F>;
+export function wrapT<F extends URIS2, E>(F: Apply2C<F, E>): Wrapper2C<F, E>;
+export function wrapT<F extends URIS>(F: Apply1<F>): Wrapper1<F>;
+export function wrapT<F extends URIS>(F: Apply<F>): Wrapper<F>;
 export function wrapT<F extends URIS>(F: Apply<F>): any {
-  const sequencer = sequenceT(F)
+  const sequencer = sequenceT(F);
 
   const fn: any = <A>(
     prolog: HKT<F, any>,
     ma: HKT<F, A>,
     epolog: HKT<F, any> | null = null
   ): any => {
-    const args = [prolog, ma, ...(epolog ? [epolog] : [])] as const
+    const args = [prolog, ma, ...(epolog ? [epolog] : [])] as const;
 
-    return F.map(sequencer(...args), ([_first, second]) => second)
-  }
+    return F.map(sequencer(...args), ([_first, second]) => second);
+  };
 
-  return fn
+  return fn;
 }
