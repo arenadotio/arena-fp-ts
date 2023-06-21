@@ -14,7 +14,7 @@ stateful operations.
 ```ts
 import { log } from 'fp-ts/lib/Console'
 import { IO, Chain } from 'fp-ts/lib/IO'
-import { wrapWithContextT } from 'arena-fp-ts/WrapperWithContext'
+import { wrapWithContextT } from '@arenadotio/arena-fp-ts/WrapperWithContext'
 
 const sqr = (x: number) => x * x
 

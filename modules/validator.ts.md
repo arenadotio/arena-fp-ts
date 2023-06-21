@@ -21,7 +21,7 @@ runtime validation to it.
 import * as t from 'io-ts'
 import { isLeft, isRight } from 'fp-ts/lib/Either'
 import { pipe } from 'fp-ts/lib/function'
-import { fromCodec } from 'arena-fp-ts/validator'
+import { fromCodec } from '@arenadotio/arena-fp-ts/validator'
 
 const UserCodec = t.type({
   name: t.string,
