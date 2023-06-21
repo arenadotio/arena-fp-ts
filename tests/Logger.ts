@@ -1,4 +1,4 @@
-import * as L from '../src/logging';
+import * as L from '../src/Logger';
 import * as S from 'fp-ts/lib/State';
 import * as A from 'fp-ts/lib/ReadonlyArray';
 import { IO, Apply, map, apSecond } from 'fp-ts/lib/IO';
@@ -45,7 +45,7 @@ describe('Logging', () => {
   );
 
   // Logger composition
-  it('can be composed', () => {
+  it('Can be composed', () => {
     const inc =
       (x: number): S.State<L.Logger, IO<number>> =>
       (logger) => {
@@ -74,7 +74,6 @@ describe('Logging', () => {
     const [program, finalLogger] = pipe(
       initialLogger,
       S.sequenceArray(steps),
-      (x) => x,
       ([ios, finalLogger]) => {
         const result = pipe(
           /* eslint-disable @typescript-eslint/no-non-null-assertion */
