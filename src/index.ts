@@ -1,6 +1,6 @@
 /** @since 0.0.1 */
 
-import { pipe } from 'fp-ts/function'
+import { pipe } from 'fp-ts/function';
 
 // -----------------------------------------------------------------------------
 // greetings
@@ -12,8 +12,8 @@ import { pipe } from 'fp-ts/function'
  * @since 0.0.1
  * @category Greetings
  * @example
- *   import { greet } from 'arena-fp-ts'
+ *   import { greet } from '@arenadotio/arena-fp-ts'
  *   assert.deepStrictEqual(greet('World'), 'Hello, World!')
  */
 export const greet = (name: string): string =>
-  pipe(`Hello`, (x) => `${x}, ${name}!`)
+  pipe(`Hello`, (x) => `${x}, ${name}!`);

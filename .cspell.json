@@ -19,6 +19,8 @@
     "pmarsceill",
     "relmify",
     "semigroup",
-    "monoid"
+    "monoid",
+    "arenadotio",
+    "npmrc"
   ]
 }

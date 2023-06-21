@@ -5,7 +5,7 @@
  * @example
  * import { log } from 'fp-ts/lib/Console';
  * import { IO, Apply } from 'fp-ts/lib/IO';
- * import { wrapT } from 'arena-fp-ts/Wrapper';
+ * import { wrapT } from '@arenadotio/arena-fp-ts/Wrapper';
  *
  * const sqr = (x: number) => x * x;
  *
@@ -37,7 +37,7 @@ import {
   URIS2,
   URIS3,
   URIS4,
-} from 'fp-ts/HKT'
+} from 'fp-ts/HKT';
 import {
   Apply,
   Apply1,
@@ -47,7 +47,7 @@ import {
   Apply3C,
   Apply4,
   sequenceT,
-} from 'fp-ts/lib/Apply'
+} from 'fp-ts/lib/Apply';
 
 // -------------------------------------------------------------------------------------
 // model
@@ -76,12 +76,12 @@ export interface Wrapper1<F extends URIS> {
  * @since 0.0.1
  */
 export interface Wrapper2<F extends URIS2> {
-  <E, A>(prolog: Kind2<F, E, any>, ma: Kind2<F, E, A>): Kind2<F, E, A>
+  <E, A>(prolog: Kind2<F, E, any>, ma: Kind2<F, E, A>): Kind2<F, E, A>;
   <E, A>(
     prolog: Kind2<F, E, any>,
     ma: Kind2<F, E, A>,
     epolog: Kind2<F, E, any>
-  ): Kind2<F, E, A>
+  ): Kind2<F, E, A>;
 }
 
 /**
@@ -89,12 +89,12 @@ export interface Wrapper2<F extends URIS2> {
  * @since 0.0.1
  */
 export interface Wrapper2C<F extends URIS2, E> {
-  <A>(prolog: Kind2<F, E, any>, ma: Kind2<F, E, A>): Kind2<F, E, A>
+  <A>(prolog: Kind2<F, E, any>, ma: Kind2<F, E, A>): Kind2<F, E, A>;
   <A>(
     prolog: Kind2<F, E, any>,
     ma: Kind2<F, E, A>,
     epolog: Kind2<F, E, any>
-  ): Kind2<F, E, A>
+  ): Kind2<F, E, A>;
 }
 
 /**
@@ -107,12 +107,12 @@ export interface Wrapper3<F extends URIS3> {
     R,
     E,
     A
-  >
+  >;
   <R, E, A>(
     prolog: Kind3<F, R, E, any>,
     ma: Kind3<F, R, E, A>,
     epolog: Kind3<F, R, E, any>
-  ): Kind3<F, R, E, A>
+  ): Kind3<F, R, E, A>;
 }
 
 /**
@@ -120,12 +120,12 @@ export interface Wrapper3<F extends URIS3> {
  * @since 0.0.1
  */
 export interface Wrapper3C<F extends URIS3, E> {
-  <R, A>(prolog: Kind3<F, R, E, any>, ma: Kind3<F, R, E, A>): Kind3<F, R, E, A>
+  <R, A>(prolog: Kind3<F, R, E, any>, ma: Kind3<F, R, E, A>): Kind3<F, R, E, A>;
   <R, A>(
     prolog: Kind3<F, R, E, any>,
     ma: Kind3<F, R, E, A>,
     epolog: Kind3<F, R, E, any>
-  ): Kind3<F, R, E, A>
+  ): Kind3<F, R, E, A>;
 }
 
 /**
@@ -139,12 +139,12 @@ export interface Wrapper4<F extends URIS4> {
     R,
     E,
     A
-  >
+  >;
   <S, R, E, A>(
     prolog: Kind4<F, S, R, E, any>,
     ma: Kind4<F, S, R, E, A>,
     epolog: Kind4<F, S, R, E, any>
-  ): Kind4<F, S, R, E, A>
+  ): Kind4<F, S, R, E, A>;
 }
 
 /**
@@ -161,7 +161,7 @@ export type URI = typeof URI
 
 declare module 'fp-ts/lib/HKT' {
   interface URItoKind<A> {
-    readonly [URI]: Wrapper<A>
+    readonly [URI]: Wrapper<A>;
   }
 }
 
