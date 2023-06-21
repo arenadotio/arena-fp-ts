@@ -1,4 +1,39 @@
 /**
+ * ```
+ * export interface Metric {
+ *     metricName: string;
+ *     value?: number;
+ *     extraTags?: Record<string, string> | string[];
+ * }
+ * ```
+ *
+ * @example
+ * import { IO } from 'fp-ts/lib/IO';
+ * import * as TO from 'fp-ts/lib/TaskOption';
+ * import { pipe } from 'fp-ts/lib/function';
+ * import * as DD from '../../src/DataDog';
+ *
+ * // Imagine this function does some needed business logic
+ * const main: IO<void> = () => undefined;
+ *
+ * // Add some DD metrics around main
+ * const appName = 'foo'
+ * const steps = [
+ *     DD.incrementMetric({ metricName: 'start', extraTags: { app_name: appName } }),
+ *     TO.fromIO(main),
+ *     DD.incrementMetric({ metricName: 'end', extraTags: { app_name: appName } })
+ * ] as const;
+ *
+ * // Sequence into a real program
+ * const program: TO.TaskOption<void> = pipe(
+ *     steps,
+ *     TO.sequenceSeqArray,
+ *     TO.asUnit
+ * );
+ *
+ * // Go
+ * (async () => await program())()
+ *
  * @since 0.0.1
  */
 
@@ -23,17 +58,17 @@ export interface Metric {
 }
 
 /**
- * @category internal
+ * @internal
  */
 export type HotShots = typeof import('hot-shots');
 
 /**
- * @category internal
+ * @internal
  */
 export type HotShotsStatsD = InstanceType<HotShots['StatsD']>
 
 /**
- * @category internal
+ * @internal
  */
 export type DatadogLambdaJs = typeof import('datadog-lambda-js');
 

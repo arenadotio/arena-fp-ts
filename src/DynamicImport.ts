@@ -74,6 +74,6 @@ export const Monoid: M.Monoid<DynamicImport> = {
  * @category utils
  * @since 0.0.1
  */
- export function firstSome(...mas: ReadonlyArray<DynamicImport>) {
+export function firstSome<T = any>(...mas: ReadonlyArray<DynamicImport<T>>): DynamicImport<T> {
     return M.concatAll(Monoid)(mas);
 }

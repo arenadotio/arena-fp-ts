@@ -19,7 +19,7 @@ describe('DynamicImport', () => {
         const jest = pipe(
             ['foo', 'bar', 'jest'],
             RO.map(DI.fromModule),
-            concatAll(DI.getMonoid())
+            concatAll(DI.Monoid)
         );
         expect(jest()).resolves.toBeSome();
     })
