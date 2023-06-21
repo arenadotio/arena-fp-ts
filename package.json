@@ -1,9 +1,16 @@
 {
-  "name": "arena-fp-ts",
+  "name": "@arenadotio/arena-fp-ts",
   "homepage": "https://github.com/arenadotio/arena-fp-ts",
   "version": "0.0.1",
   "main": "dist/index.js",
   "license": "MIT",
+  "publishConfig": {
+    "@arenadotio": "https://npm.pkg.github.com/arenadotio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arenadotio/arena-fp-ts.git"
+  },
   "peerDependencies": {
     "fp-ts": "^2.9.5",
     "io-ts": "^2.2.20"
