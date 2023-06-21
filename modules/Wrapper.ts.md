@@ -1,6 +1,6 @@
 ---
 title: Wrapper.ts
-nav_order: 3
+nav_order: 4
 parent: Modules
 ---
 
@@ -14,7 +14,7 @@ stateful operations.
 ```ts
 import { log } from 'fp-ts/lib/Console'
 import { IO, Apply } from 'fp-ts/lib/IO'
-import { wrapT } from '@arenadotio/arena-fp-ts/Wrapper'
+import { wrapT } from 'arena-fp-ts/Wrapper'
 
 const sqr = (x: number) => x * x
 
