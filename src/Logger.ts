@@ -1,5 +1,5 @@
 /**
- * `Logger` is a type reexpored from `pino` and can be used to wrap calls to
+ * `Logger` is a type re-exported from `pino` and can be used to wrap calls to
  * `pino` in `IO<void>` instances. Using the `State` monad, logging functions
  * can be composed while preserving changes they make to the logger bindings.
  *
@@ -27,7 +27,7 @@
  *     const log = L.info(logger);
  *     // Return a tuple of the result and the next logger
  *     return [
- *         // Result logss a message, then returns the value of f(s)
+ *         // Result logs a message, then returns the value of f(s)
  *         pipe(
  *             log('In step one with arg %s', s),
  *             IO.apSecond(() => f(s)),
@@ -45,7 +45,7 @@
  *     const log = L.debug(logger);
  *     // Return a tuple of the result and the next logger
  *     return [
- *         // Result logss a message, then returns the value of f(s)
+ *         // Result logs a message, then returns the value of f(s)
  *         pipe(
  *             log('In step two with arg %d', n),
  *             IO.apSecond(() => g(n)),
