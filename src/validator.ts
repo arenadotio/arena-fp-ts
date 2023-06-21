@@ -36,9 +36,9 @@
  * @since 0.0.1
  */
 
-import * as E from 'fp-ts/lib/Either'
-import { flow } from 'fp-ts/lib/function'
-import { Decoder, Validation } from 'io-ts'
+import * as E from 'fp-ts/lib/Either';
+import { flow } from 'fp-ts/lib/function';
+import { Decoder, Validation } from 'io-ts';
 
 // -------------------------------------------------------------------------------------
 // model
@@ -49,7 +49,7 @@ import { Decoder, Validation } from 'io-ts'
  * @since 0.0.1
  */
 export interface Validator<A, B> {
-  (f: (a: A) => B): (a: A) => Validation<B>
+  (f: (a: A) => B): (a: A) => Validation<B>;
 }
 
 // -------------------------------------------------------------------------------------
@@ -61,5 +61,5 @@ export interface Validator<A, B> {
  * @since 0.0.1
  */
 export function fromCodec<A, B>(codec: Decoder<unknown, A>): Validator<A, B> {
-  return (f) => flow(codec.decode, E.map(f))
+  return (f) => flow(codec.decode, E.map(f));
 }
