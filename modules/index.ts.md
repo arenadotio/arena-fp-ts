@@ -1,6 +1,6 @@
 ---
 title: index.ts
-nav_order: 3
+nav_order: 1
 parent: Modules
 ---
 
@@ -32,7 +32,7 @@ export declare const greet: (name: string) => string
 **Example**
 
 ```ts
-import { greet } from 'arena-fp-ts'
+import { greet } from '@arenadotio/arena-fp-ts'
 assert.deepStrictEqual(greet('World'), 'Hello, World!')
 ```
 
