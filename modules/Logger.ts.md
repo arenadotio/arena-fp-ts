@@ -1,6 +1,6 @@
 ---
 title: Logger.ts
-nav_order: 4
+nav_order: 5
 parent: Modules
 ---
 
@@ -13,8 +13,6 @@ can be composed while preserving changes they make to the logger bindings.
 **Example**
 
 ```ts
-import pino from 'pino'
-
 import { pipe } from 'fp-ts/lib/function'
 import * as IO from 'fp-ts/lib/IO'
 import * as S from 'fp-ts/lib/State'
@@ -78,7 +76,7 @@ const step3 =
 
 // Sequence the State monads
 const [ios, finalLogger] = pipe(
-  pino(),
+  L.makeLogger('myApp'),
   S.sequenceArray<L.Logger, IO.IO<string | number | boolean>>([step1('foo'), step2(2), step3(true)])
 )
 
@@ -90,11 +88,9 @@ const program = pipe(
 )
 
 assert.deepStrictEqual(program(), ['FOO', 4, false])
-assert.deepStrictEqual(finalLogger.bindings(), {
-  step1: 'called',
-  step2: 'called',
-  step3: 'called',
-})
+assert.deepStrictEqual(finalLogger.bindings().step1, 'called')
+assert.deepStrictEqual(finalLogger.bindings().step2, 'called')
+assert.deepStrictEqual(finalLogger.bindings().step3, 'called')
 ```
 
 Added in v0.0.1
@@ -103,7 +99,10 @@ Added in v0.0.1
 
 <h2 class="text-delta">Table of contents</h2>
 
+- [constructors](#constructors)
+  - [makeLogger](#makelogger)
 - [model](#model)
+  - [LogFn (interface)](#logfn-interface)
   - [LogLevel (type alias)](#loglevel-type-alias)
   - [Logger (type alias)](#logger-type-alias)
   - [PinoLogger (type alias)](#pinologger-type-alias)
@@ -117,7 +116,36 @@ Added in v0.0.1
 
 ---
 
+# constructors
+
+## makeLogger
+
+**Signature**
+
+```ts
+export declare const makeLogger: (
+  appName: string,
+  options?: LoggerOptions | undefined,
+  stream?: DestinationStream | undefined
+) => Logger
+```
+
+Added in v0.0.1
+
 # model
+
+## LogFn (interface)
+
+**Signature**
+
+```ts
+export interface LogFn {
+  (obj: unknown, msg?: string, ...args: any[]): IO<void>
+  (msg: string, ...args: any[]): IO<void>
+}
+```
+
+Added in v0.0.1
 
 ## LogLevel (type alias)
 

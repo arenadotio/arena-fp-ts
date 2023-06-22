@@ -1,6 +1,6 @@
 ---
 title: validator.ts
-nav_order: 5
+nav_order: 7
 parent: Modules
 ---
 
@@ -73,7 +73,7 @@ Added in v0.0.1
 
 ```ts
 export interface Validator<A, B> {
-  (f: (a: A) => B): (a: A) => Validation<B>
+  (f: (a: A) => B): (a: unknown) => E.Either<Error, B>
 }
 ```
 
