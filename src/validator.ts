@@ -38,7 +38,8 @@
 
 import * as E from 'fp-ts/lib/Either';
 import { flow } from 'fp-ts/lib/function';
-import { Decoder, Validation } from 'io-ts';
+import { Decoder } from 'io-ts';
+import { formatValidationErrors } from 'io-ts-reporters';
 
 // -------------------------------------------------------------------------------------
 // model
@@ -49,7 +50,7 @@ import { Decoder, Validation } from 'io-ts';
  * @since 0.0.1
  */
 export interface Validator<A, B> {
-  (f: (a: A) => B): (a: A) => Validation<B>;
+  (f: (a: A) => B): (a: unknown) => E.Either<Error, B>;
 }
 
 // -------------------------------------------------------------------------------------
@@ -61,5 +62,12 @@ export interface Validator<A, B> {
  * @since 0.0.1
  */
 export function fromCodec<A, B>(codec: Decoder<unknown, A>): Validator<A, B> {
-  return (f) => flow(codec.decode, E.map(f));
+  const validationErrorsToError = flow(
+    formatValidationErrors,
+    (str) => str.join('\n'),
+    (msg) => new Error(msg)
+  );
+
+  return (f) =>
+    flow(codec.decode, E.map(f), E.mapLeft(validationErrorsToError));
 }

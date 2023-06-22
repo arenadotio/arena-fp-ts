@@ -1,19 +1,19 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Logging Can be composed 1`] = `
-Array [
-  Array [
+[
+  [
     "one last message",
   ],
-  Array [
+  [
     "called with %d",
     1,
   ],
-  Array [
+  [
     "called with %d",
     2,
   ],
-  Array [
+  [
     "called with %d",
     3,
   ],
@@ -21,7 +21,7 @@ Array [
 `;
 
 exports[`Logging Can be composed 2`] = `
-Object {
+{
   "inc1": "called",
   "inc2": "called",
   "inc3": "called",

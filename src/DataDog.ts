@@ -52,9 +52,9 @@ import { TaskOption } from 'fp-ts/lib/TaskOption';
  * @since 0.0.1
  */
 export interface Metric {
-    metricName: string;
-    value?: number;
-    extraTags?: Record<string, string> | string[];
+  metricName: string;
+  value?: number;
+  extraTags?: Record<string, string> | string[];
 }
 
 /**
@@ -65,7 +65,7 @@ export type HotShots = typeof import('hot-shots');
 /**
  * @internal
  */
-export type HotShotsStatsD = InstanceType<HotShots['StatsD']>
+export type HotShotsStatsD = InstanceType<HotShots['StatsD']>;
 
 /**
  * @internal
@@ -86,7 +86,8 @@ export const HotShots = DI.fromModule<HotShots>('hot-shots');
  * @category instances
  * @since 0.0.1
  */
-export const DatadogLambdaJs = DI.fromModule<DatadogLambdaJs>('datadog-lambda-js');
+export const DatadogLambdaJs =
+  DI.fromModule<DatadogLambdaJs>('datadog-lambda-js');
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -95,51 +96,52 @@ export const DatadogLambdaJs = DI.fromModule<DatadogLambdaJs>('datadog-lambda-js
 /**
  * @category internal
  */
-const incrementMetricHotShot = (
-    client: HotShotsStatsD
-): (a: Metric) => IO<void> => (
-    metric
-) => () => {
+const incrementMetricHotShot =
+  (client: HotShotsStatsD): ((a: Metric) => IO<void>) =>
+  (metric) =>
+  () => {
     const { metricName, value, extraTags } = metric;
     const fullMetricName = `${metricName.replace('-', '_').replace(' ', '_')}`;
     client.increment(fullMetricName, value || 1, extraTags);
-}
+  };
 
 /**
  * @category internal
  */
-const incrementMetricLambda = (
-    datadog: DatadogLambdaJs
-): (a: Metric) => IO<void> => (
-    metric
-) => () => {
+const incrementMetricLambda =
+  (datadog: DatadogLambdaJs): ((a: Metric) => IO<void>) =>
+  (metric) =>
+  () => {
     const { metricName, value, extraTags } = metric;
     const fullMetricName = `${metricName.replace('-', '_').replace(' ', '_')}`;
 
-    const tags = typeof extraTags === 'object' ? Object.entries(extraTags).map(([k, v]) => `${k}:${v}`) : extraTags;
+    const tags =
+      typeof extraTags === 'object'
+        ? Object.entries(extraTags).map(([k, v]) => `${k}:${v}`)
+        : extraTags;
 
     datadog.sendDistributionMetric(fullMetricName, value || 1, ...(tags || []));
-}
+  };
 
 /**
  * @category utils
  * @since 0.0.1
  */
 export const incrementMetric: (a: Metric) => TO.TaskOption<void> = (a) => {
-    const lambda: TaskOption<(a: Metric) => IO<void>> = pipe(
-        DatadogLambdaJs,
-        TO.map(incrementMetricLambda),
-    );
+  const lambda: TaskOption<(a: Metric) => IO<void>> = pipe(
+    DatadogLambdaJs,
+    TO.map(incrementMetricLambda)
+  );
 
-    const hotshot: TaskOption<(a: Metric) => IO<void>> = pipe(
-        HotShots,
-        TO.map((hotShots: HotShots) => new hotShots.StatsD()),
-        TO.map(incrementMetricHotShot),
-    );
+  const hotshot: TaskOption<(a: Metric) => IO<void>> = pipe(
+    HotShots,
+    TO.map((hotShots: HotShots) => new hotShots.StatsD()),
+    TO.map(incrementMetricHotShot)
+  );
 
-    return pipe(
-        lambda,
-        TO.alt(() => hotshot),
-        TO.flatMapIO(f => f(a)),
-    );
-}
+  return pipe(
+    lambda,
+    TO.alt(() => hotshot),
+    TO.flatMapIO((f) => f(a))
+  );
+};

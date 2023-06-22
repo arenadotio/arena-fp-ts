@@ -4,8 +4,6 @@
  * can be composed while preserving changes they make to the logger bindings.
  *
  * @example
- * import pino from 'pino';
- *
  * import { pipe } from 'fp-ts/lib/function';
  * import * as IO from 'fp-ts/lib/IO';
  * import * as S from 'fp-ts/lib/State';
@@ -75,7 +73,7 @@
  *
  * // Sequence the State monads
  * const [ios, finalLogger] = pipe(
- *     pino(),
+ *     L.makeLogger('myApp'),
  *     S.sequenceArray<L.Logger, IO.IO<string | number | boolean>>([
  *         step1('foo'),
  *         step2(2),
@@ -91,20 +89,18 @@
  * )
  *
  * assert.deepStrictEqual(program(), ['FOO', 4, false]);
- * assert.deepStrictEqual(
- *     finalLogger.bindings(),
- *     {
- *         step1: 'called',
- *         step2: 'called',
- *         step3: 'called',
- *     }
- * )
+ * assert.deepStrictEqual(finalLogger.bindings().step1, 'called');
+ * assert.deepStrictEqual(finalLogger.bindings().step2, 'called');
+ * assert.deepStrictEqual(finalLogger.bindings().step3, 'called');
  *
  * @since 0.0.1
  */
 
-import Pino from 'pino';
+import Pino, { DestinationStream, LoggerOptions } from 'pino';
 import { IO } from 'fp-ts/lib/IO';
+
+import * as os from 'os';
+import { randomUUID } from 'crypto';
 
 // -------------------------------------------------------------------------------------
 // model
@@ -126,7 +122,7 @@ export type LogLevel = Pino.Level;
  * @category model
  * @since 0.0.1
  */
-interface LogFn {
+export interface LogFn {
   (obj: unknown, msg?: string, ...args: any[]): IO<void>;
   (msg: string, ...args: any[]): IO<void>;
 }
@@ -136,6 +132,53 @@ interface LogFn {
  * @since 0.0.1
  */
 export type Logger = ReturnType<typeof Pino>;
+
+// -------------------------------------------------------------------------------------
+// constructors
+// -------------------------------------------------------------------------------------
+
+const defaults: LoggerOptions = {
+  level: 'debug',
+  formatters: {
+    level(level) {
+      return { level };
+    },
+  },
+  base: {
+    host: os.hostname(),
+    processid: randomUUID(),
+  },
+};
+
+/**
+ * @category constructors
+ * @since 0.0.1
+ */
+export const makeLogger = (
+  appName: string,
+  options?: LoggerOptions,
+  stream?: DestinationStream
+): Logger => {
+  const opts: LoggerOptions = {
+    ...defaults,
+    ...options,
+    ...{
+      base: {
+        ...defaults.base,
+        ...options?.base,
+        name: appName,
+        source: appName,
+        app_name: appName,
+      },
+    },
+  };
+
+  if (stream) {
+    return Pino(opts, stream);
+  } else {
+    return Pino(opts);
+  }
+};
 
 // -------------------------------------------------------------------------------------
 // utils
