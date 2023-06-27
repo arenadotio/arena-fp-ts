@@ -11,6 +11,12 @@ describe('Logging', () => {
   const mergeObject = { foo: 'bar' };
   const interpolationValue = { bar: 'foo' };
 
+  const spy = jest.fn();
+
+  afterEach(() => {
+    spy.mockClear();
+  });
+
   // Logger invocation
   it.each(['fatal', 'error', 'warn', 'info', 'debug', 'trace'] as L.LogLevel[])(
     'Log level %s',
@@ -19,14 +25,9 @@ describe('Logging', () => {
         level: 'trace',
       });
 
-      const spy = jest.fn();
       logger[level] = spy;
 
       const log = L[level](logger);
-
-      afterEach(() => {
-        spy.mockClear();
-      });
 
       const argsList = [
         [message],

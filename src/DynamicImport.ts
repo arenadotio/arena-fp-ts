@@ -28,13 +28,13 @@ export type DynamicImport<T = any> = TO.TaskOption<T>;
  */
 
 export function fromModule<A = any>(name: string): TO.TaskOption<A> {
-    return async () => {
-        try {
-            return O.some(await import(name));
-        } catch {
-            return O.none;
-        }
+  return async () => {
+    try {
+      return O.some(await import(name));
+    } catch {
+      return O.none;
     }
+  };
 }
 
 // -------------------------------------------------------------------------------------
@@ -44,17 +44,21 @@ export function fromModule<A = any>(name: string): TO.TaskOption<A> {
 /**
  * @internal
  */
-const _concat = <A>(first: DynamicImport<A>, second: DynamicImport<A>): TO.TaskOption<A> => pipe(
+const _concat = <A>(
+  first: DynamicImport<A>,
+  second: DynamicImport<A>
+): TO.TaskOption<A> =>
+  pipe(
     first,
-    TO.alt(() => second),
-);
+    TO.alt(() => second)
+  );
 
 /**
  * @category instances
  * @since 0.0.1
  */
 export const Semigroup: S.Semigroup<DynamicImport> = {
-    concat: _concat,
+  concat: _concat,
 };
 
 /**
@@ -62,8 +66,8 @@ export const Semigroup: S.Semigroup<DynamicImport> = {
  * @since 0.0.1
  */
 export const Monoid: M.Monoid<DynamicImport> = {
-    concat: Semigroup.concat,
-    empty: TO.none,
+  concat: Semigroup.concat,
+  empty: TO.none,
 };
 
 // -------------------------------------------------------------------------------------
@@ -74,6 +78,8 @@ export const Monoid: M.Monoid<DynamicImport> = {
  * @category utils
  * @since 0.0.1
  */
-export function firstSome<T = any>(...mas: ReadonlyArray<DynamicImport<T>>): DynamicImport<T> {
-    return M.concatAll(Monoid)(mas);
+export function firstSome<T = any>(
+  ...mas: ReadonlyArray<DynamicImport<T>>
+): DynamicImport<T> {
+  return M.concatAll(Monoid)(mas);
 }
