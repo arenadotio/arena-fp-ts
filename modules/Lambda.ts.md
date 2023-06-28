@@ -56,6 +56,7 @@ Added in v0.0.1
 - [conversions](#conversions)
   - [toLambda](#tolambda)
 - [model](#model)
+  - [AWSHandler (type alias)](#awshandler-type-alias)
   - [Handler (type alias)](#handler-type-alias)
   - [LambdaState (interface)](#lambdastate-interface)
 
@@ -68,23 +69,29 @@ Added in v0.0.1
 **Signature**
 
 ```ts
-export declare function toLambda<A>(
-  appName: string,
-  codec: Decoder<unknown, A>,
-  handler: (state: LambdaState<A>) => T.Task<[E.Either<Error, void>, LambdaState<A>]>
-): AWSHandler<A, void>
+export declare function toLambda<A>(appName: string, codec: Decoder<unknown, A>, handler: Handler<A>): AWSHandler
 ```
 
 Added in v0.0.1
 
 # model
 
+## AWSHandler (type alias)
+
+**Signature**
+
+```ts
+export type AWSHandler = AWS.Handler<any, void>
+```
+
+Added in v0.0.1
+
 ## Handler (type alias)
 
 **Signature**
 
 ```ts
-export type Handler<A> = (state: LambdaState<A>) => T.Task<[E.Either<Error, void>, LambdaState<A>]>
+export type Handler<A> = (state: LambdaState<A>) => T.Task<readonly [E.Either<Error, void>, LambdaState<A>]>
 ```
 
 Added in v0.0.1
