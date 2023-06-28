@@ -55,11 +55,17 @@ import * as Sentry from './Sentry';
 import * as DD from './DataDog';
 
 import { AWSLambda } from '@sentry/serverless';
-import { Handler as AWSHandler } from 'aws-lambda';
+import * as AWS from 'aws-lambda';
 
 // -------------------------------------------------------------------------------------
 // model
 // -------------------------------------------------------------------------------------
+
+/**
+ * @category model
+ * @since 0.0.1
+ */
+export type AWSHandler = AWS.Handler<any, void>;
 
 /**
  * @category model
@@ -77,7 +83,7 @@ export interface LambdaState<A> {
  */
 export type Handler<A> = (
   state: LambdaState<A>
-) => T.Task<[E.Either<Error, void>, LambdaState<A>]>;
+) => T.Task<readonly [E.Either<Error, void>, LambdaState<A>]>;
 
 // -------------------------------------------------------------------------------------
 // conversions
@@ -90,10 +96,8 @@ export type Handler<A> = (
 export function toLambda<A>(
   appName: string,
   codec: Decoder<unknown, A>,
-  handler: (
-    state: LambdaState<A>
-  ) => T.Task<[E.Either<Error, void>, LambdaState<A>]>
-): AWSHandler<A, void> {
+  handler: Handler<A>
+): AWSHandler {
   // Create logger instance and reporting functions
   const logger = L.makeLogger(appName);
   const debug = L.debug(logger);
@@ -149,7 +153,12 @@ export function toLambda<A>(
     TE.fold(flow(error, T.fromIO), run)
   );
 
-  return AWSLambda.wrapHandler((event: unknown, _context, _callback) => {
+  return AWSLambda.wrapHandler((input: unknown, _context, _callback) => {
+    const event =
+      input && typeof input === 'object' && 'detail' in input
+        ? input.detail
+        : null;
+
     const program = T.sequenceSeqArray([
       incrementMetric('start'),
       T.fromIO(info({ event }, 'Received event')),
