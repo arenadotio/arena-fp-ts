@@ -35,8 +35,8 @@ const TestEventCodec = t.type({
   foo: t.string,
 });
 
-const validEvent = { foo: 'bar' };
-const invalidEvent = { bar: 'foo' };
+const validEvent = { detail: { foo: 'bar' } };
+const invalidEvent = { detail: { bar: 'foo' } };
 
 const successfulHandler = jest.fn((state) =>
   T.of([E.right(undefined), { ...state, logger }])
