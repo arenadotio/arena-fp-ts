@@ -13,22 +13,16 @@
 
 ## Install
 
-Add the @arenadotio registry to the projects `.npmrc` or `~/.npmrc`:
-
-```
-@arenadotio:registry=https://npm.pkg.github.com
-```
-
 Uses `fp-ts` and `io-ts` as a peer dependency.
 
 ```bash
-yarn add io-ts fp-ts @arenadotio/arena-fp-ts
+yarn add io-ts fp-ts arena-fp-ts
 ```
 
 or
 
 ```bash
-npm install io-ts fp-ts @arenadotio/arena-fp-ts
+npm install io-ts fp-ts arena-fp-ts
 ```
 
 ## Usage
