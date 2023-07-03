@@ -1,5 +1,5 @@
 {
-  "name": "@arenadotio/arena-fp-ts",
+  "name": "arena-fp-ts",
   "homepage": "https://github.com/arenadotio/arena-fp-ts",
   "version": "0.0.1",
   "main": "dist/index.js",
