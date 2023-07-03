@@ -1,6 +1,6 @@
 ---
 title: Sentry.ts
-nav_order: 6
+nav_order: 5
 parent: Modules
 ---
 
@@ -14,8 +14,8 @@ Functions to capture exception in sentry:
 import * as E from 'fp-ts/lib/Either'
 import * as IO from 'fp-ts/lib/IO'
 import { pipe } from 'fp-ts/lib/function'
-import * as L from '@arenadotio/arena-fp-ts/Logger'
-import * as Sentry from '@arenadotio/arena-fp-ts/Sentry'
+import * as L from 'arena-fp-ts/Logger'
+import * as Sentry from 'arena-fp-ts/Sentry'
 
 export function foo(logger: L.Logger, data: E.Either<Error, number>) {
   if (E.isLeft(data)) {

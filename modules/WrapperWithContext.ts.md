@@ -1,6 +1,6 @@
 ---
 title: WrapperWithContext.ts
-nav_order: 9
+nav_order: 8
 parent: Modules
 ---
 
@@ -14,7 +14,7 @@ stateful operations.
 ```ts
 import { log } from 'fp-ts/lib/Console'
 import { IO, Chain } from 'fp-ts/lib/IO'
-import { wrapWithContextT } from '@arenadotio/arena-fp-ts/WrapperWithContext'
+import { wrapWithContextT } from 'arena-fp-ts/WrapperWithContext'
 
 const sqr = (x: number) => x * x
 

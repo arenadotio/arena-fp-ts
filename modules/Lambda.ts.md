@@ -1,6 +1,6 @@
 ---
 title: Lambda.ts
-nav_order: 4
+nav_order: 3
 parent: Modules
 ---
 
@@ -39,7 +39,7 @@ import * as E from 'fp-ts/lib/Either'
 import * as T from 'fp-ts/lib/Task'
 import * as t from 'io-ts'
 
-import * as L from '@arenadotio/arena-fp-ts/Lambda'
+import * as L from 'arena-fp-ts/Lambda'
 
 const myCoolHandler: L.Handler<string> = (state: L.LambdaState<string>) =>
   T.of([E.left(new Error("I don't do anything")), state])

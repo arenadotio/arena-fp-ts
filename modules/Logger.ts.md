@@ -1,6 +1,6 @@
 ---
 title: Logger.ts
-nav_order: 5
+nav_order: 4
 parent: Modules
 ---
 
@@ -18,7 +18,7 @@ import * as IO from 'fp-ts/lib/IO'
 import * as S from 'fp-ts/lib/State'
 import * as A from 'fp-ts/lib/Apply'
 
-import * as L from '@arenadotio/arena-fp-ts/Logger'
+import * as L from 'arena-fp-ts/Logger'
 
 // If you have some general business logic functions
 const f = (s: string) => s.toUpperCase()
