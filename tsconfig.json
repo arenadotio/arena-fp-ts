@@ -1,20 +1,11 @@
 {
   "compilerOptions": {
-    "outDir": "./dist/lib",
-    "noEmit": true,
-    "declaration": true,
-    "esModuleInterop": true,
-    "module": "commonjs",
-    "noImplicitReturns": false,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    "strict": true,
-    "target": "es5",
+    "target": "es2020",
+    "lib": ["esnext", "dom"],
     "moduleResolution": "node",
-    "forceConsistentCasingInFileNames": true,
-    "stripInternal": true,
-    "skipLibCheck": true
+    "strict": true,
+    "declaration": false,
+    "removeComments": true
   },
-  "include": ["./src", "./test"]
+  "include": ["./src/**/*.ts", "./test/**/*.ts"]
 }
