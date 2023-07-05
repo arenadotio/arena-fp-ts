@@ -1,16 +1,30 @@
 {
   "name": "arena-fp-ts",
   "homepage": "https://github.com/arenadotio/arena-fp-ts",
-  "version": "0.0.2",
+  "version": "0.0.4",
   "main": "dist/index.js",
   "license": "MIT",
-  "publishConfig": {
-    "@arenadotio": "https://npm.pkg.github.com/arenadotio"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/arenadotio/arena-fp-ts.git"
   },
+  "exports": {
+    "./*": {
+      "types": "./dist/types/*.d.ts",
+      "require": "./dist/cjs/*.js",
+      "import": "./dist/esm/*.js"
+    }
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/types/*"
+      ]
+    }
+  },
+  "files": [
+    "dist/"
+  ],
   "peerDependencies": {
     "@sentry/node": "^7.56.0",
     "@sentry/serverless": "^7.56.0",
@@ -57,17 +71,14 @@
     "typescript": "^4.2.3"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "build:watch": "tsc -w -p tsconfig.build.json",
-    "prepublish": "yarn run build",
-    "pretty": "yarn run prettier --write .",
-    "lint": "yarn run eslint . --ext .js,.jsx,.ts,.tsx --max-warnings 0",
-    "test": "yarn run jest",
-    "test:watch": "yarn run jest --watch",
-    "docs": "yarn run docs-ts",
-    "spell": "yarn cspell '**/*.*'",
-    "md": "yarn run markdown",
-    "format": "prettier --config .prettierrc '**.ts' --write"
+    "build": "rm -rf ./dist && mkdir -p ./dist/esm ./dist/cjs/ && tsc -p ./tsconfig.build-esm.json && tsc -p ./tsconfig.build-cjs.json && tsc -p ./tsconfig.build-types.json",
+    "format": "yarn run prettier --write .",
+    "lint": "eslint ./src/ ./tests/ --ext ts",
+    "test": "jest",
+    "docs": "docs-ts",
+    "spell": "cspell '**/*.*'",
+    "md": "markdown",
+    "prepublish": "yarn build"
   },
   "pre-commit": [
     "format",
