@@ -5,7 +5,8 @@
     "moduleResolution": "node",
     "strict": true,
     "declaration": false,
-    "removeComments": true
+    "removeComments": true,
+    "esModuleInterop": true
   },
   "include": ["./src/**/*.ts", "./test/**/*.ts"]
 }

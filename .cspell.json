@@ -23,6 +23,7 @@
     "arenadotio",
     "npmrc",
     "pino",
-    "processid"
+    "processid",
+    "SRTE"
   ]
 }
