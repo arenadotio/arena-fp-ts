@@ -1,4 +1,4 @@
-import '@relmify/jest-fp-ts';
+import { describe, it, expect } from '@jest/globals';
 import { pipe } from 'fp-ts/lib/function';
 import * as DI from '../src/DynamicImport';
 import * as RO from 'fp-ts/lib/ReadonlyArray';

@@ -5,6 +5,7 @@
 ---
 
 <!-- AUTO-GENERATED-CONTENT:START (TOC) -->
+
 - [Install](#install)
 - [Usage](#usage)
 <!-- AUTO-GENERATED-CONTENT:END -->
