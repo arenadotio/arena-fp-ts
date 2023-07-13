@@ -32,6 +32,7 @@ Added in v0.0.5
 - [models](#models)
   - [StateReaderTaskEitherPropertyNames (type alias)](#statereadertaskeitherpropertynames-type-alias)
 - [utils](#utils)
+  - [mockLambda](#mocklambda)
   - [mockStateReaderTaskEither](#mockstatereadertaskeither)
 
 ---
@@ -106,6 +107,25 @@ export type StateReaderTaskEitherPropertyNames<T> = {
 Added in v0.0.5
 
 # utils
+
+## mockLambda
+
+**Signature**
+
+```ts
+export declare function mockLambda<A>(
+  codec: Type<A, any, unknown>,
+  returnValue: (state: State) => TE.TaskEither<[Error, State], [void, State]>
+): [
+  {
+    codec: Type<A, any, unknown>
+    main: jest.Mock<RTE.ReaderTaskEither<A, [Error, State], [void, State]>, [State]>
+  },
+  jest.Mock<TE.TaskEither<[Error, State], [void, State]>, [A]>
+]
+```
+
+Added in v0.0.6
 
 ## mockStateReaderTaskEither
 

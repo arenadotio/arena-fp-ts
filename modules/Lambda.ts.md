@@ -7,44 +7,57 @@ parent: Modules
 ## Lambda overview
 
 ```
-export interface LambdaState<A> {
+export interface State {
   appName: string;
   logger: L.Logger;
-  event: A;
 }
 ```
 
 ```
-export type Handler<A> = (
-  state: LambdaState<A>
-) => T.Task<[E.Either<Error, void>, LambdaState<A>]>;
+export type Main<A> = SRTE.StateReaderTaskEither<
+  State,
+  A,
+  [Error, State],
+  void
+>;
 ```
 
-This module is used to transform a `Handler<A>` into a function that
+```
+export interface Lambda<A> {
+  appName?: string;
+  logger?: L.Logger;
+  codec: Type<A, any, unknown>;
+  main: Main<A>;
+}
+```
+
+This module is used to transform a `Lambda<A>` into a function that
 AWSLambda can call.
 
-The handler must return a tuple containing its result and a (possibly
-changed) state object. If the result is an Either.right, its value is ignored
-and the handle is believed to have succeeded. If the result is an
-Either.left, then its value will be captured in Sentry.
+The handler contains a main function that is implemented as a
+StateReaderTaskEither<State, A, [Error, State], void>. Not that the left type
+is also a tuple linking an Error with a new state in the same way that the
+right type usually does. This allows the State to be uploaded at some point
+during the handler event if it eventually fails.
 
-Before the handler is invoke, the input from AWS will be validated using
+Before the handler is invoked, the input from AWS will be validated using
 io-ts. If any validation errors are signaled, the handler will never be
 called and an exception will be sent to Sentry.
 
 **Example**
 
 ```ts
-import * as E from 'fp-ts/lib/Either'
-import * as T from 'fp-ts/lib/Task'
+import * as TE from 'fp-ts/lib/TaskEither'
 import * as t from 'io-ts'
 
 import * as L from 'arena-fp-ts/Lambda'
 
-const myCoolHandler: L.Handler<string> = (state: L.LambdaState<string>) =>
-  T.of([E.left(new Error("I don't do anything")), state])
+const myCoolLambda: L.Lambda<string> = {
+  codec: t.string,
+  main: (state) => (_event) => TE.left([new Error("oof I don't do anything"), state]),
+}
 
-export const app = L.toLambda('my-cool-handler', t.string, myCoolHandler)
+export const app = L.toAWSLambda(myCoolLambda)
 ```
 
 Added in v0.0.1
@@ -54,25 +67,40 @@ Added in v0.0.1
 <h2 class="text-delta">Table of contents</h2>
 
 - [conversions](#conversions)
-  - [toLambda](#tolambda)
+  - [toAWSLambda](#toawslambda)
+  - [~~toLambda~~](#tolambda)
 - [model](#model)
   - [AWSHandler (type alias)](#awshandler-type-alias)
-  - [Handler (type alias)](#handler-type-alias)
-  - [LambdaState (interface)](#lambdastate-interface)
+  - [Lambda (interface)](#lambda-interface)
+  - [Main (type alias)](#main-type-alias)
+  - [State (interface)](#state-interface)
+  - [~~LambdaState~~ (interface)](#lambdastate-interface)
+- [utils](#utils)
+  - [~~Handler~~ (type alias)](#handler-type-alias)
 
 ---
 
 # conversions
 
-## toLambda
+## toAWSLambda
 
 **Signature**
 
 ```ts
-export declare function toLambda<A>(appName: string, codec: Decoder<unknown, A>, handler: Handler<A>): AWSHandler
+export declare function toAWSLambda<A>(lambda: Lambda<A>): AWSHandler<A>
 ```
 
-Added in v0.0.1
+Added in v0.0.6
+
+## ~~toLambda~~
+
+**Signature**
+
+```ts
+export declare function toLambda<A>(appName: string, codec: Decoder<unknown, A>, handler: Handler<A>): AWSHandler<A>
+```
+
+Added in v0.0.8
 
 # model
 
@@ -81,22 +109,50 @@ Added in v0.0.1
 **Signature**
 
 ```ts
-export type AWSHandler = AWS.Handler<any, void>
+export type AWSHandler<A> = AWS.Handler<{ detail: A }, void>
 ```
 
-Added in v0.0.1
+Added in v0.0.6
 
-## Handler (type alias)
+## Lambda (interface)
 
 **Signature**
 
 ```ts
-export type Handler<A> = (state: LambdaState<A>) => T.Task<readonly [E.Either<Error, void>, LambdaState<A>]>
+export interface Lambda<A> {
+  appName?: string
+  logger?: L.Logger
+  codec: Type<A, any, unknown>
+  main: Main<A>
+}
 ```
 
-Added in v0.0.1
+Added in v0.0.6
 
-## LambdaState (interface)
+## Main (type alias)
+
+**Signature**
+
+```ts
+export type Main<A> = SRTE.StateReaderTaskEither<State, A, [Error, State], void>
+```
+
+Added in v0.0.6
+
+## State (interface)
+
+**Signature**
+
+```ts
+export interface State {
+  appName: string
+  logger: L.Logger
+}
+```
+
+Added in v0.0.6
+
+## ~~LambdaState~~ (interface)
 
 **Signature**
 
@@ -106,6 +162,18 @@ export interface LambdaState<A> {
   logger: L.Logger
   event: A
 }
+```
+
+Added in v0.0.1
+
+# utils
+
+## ~~Handler~~ (type alias)
+
+**Signature**
+
+```ts
+export type Handler<A> = (state: LambdaState<A>) => T.Task<readonly [E.Either<Error, void>, LambdaState<A>]>
 ```
 
 Added in v0.0.1
