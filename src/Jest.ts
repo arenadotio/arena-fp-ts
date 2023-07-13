@@ -23,6 +23,10 @@ import * as TE from 'fp-ts/lib/TaskEither';
 import * as A from 'fp-ts/lib/Array';
 import * as O from 'fp-ts/lib/Option';
 
+import * as L from './Logger';
+
+import { Type } from 'io-ts';
+
 import { expect } from '@jest/globals';
 import { equals } from '@relmify/jest-fp-ts/dist/predicates/equals';
 import { isEitherOrThese } from '@relmify/jest-fp-ts/dist/predicates/isEitherOrThese';
@@ -38,6 +42,7 @@ import {
   printExpected,
   printReceived,
 } from 'jest-matcher-utils';
+import { State } from './Lambda';
 
 // -------------------------------------------------------------------------------------
 // model
@@ -136,6 +141,42 @@ export function mockStateReaderTaskEither<
   spy.mockReturnValue(fn as any);
 
   return [fn, spy] as any;
+}
+
+/**
+ * @category utils
+ * @since 0.0.6
+ */
+export function mockLambda<A>(
+  codec: Type<A, any, unknown>,
+  returnValue: (state: State) => TE.TaskEither<[Error, State], [void, State]>
+): [
+  {
+    codec: Type<A, any, unknown>;
+    main: jest.Mock<
+      RTE.ReaderTaskEither<A, [Error, State], [void, State]>,
+      [State]
+    >;
+  },
+  jest.Mock<TE.TaskEither<[Error, State], [void, State]>, [A]>
+] {
+  const appName = 'mock';
+  const logger = L.makeLogger(appName);
+  const state: State = {
+    appName,
+    logger,
+  };
+  const ret = returnValue(state);
+  const rte = jest.fn((_: A) => ret);
+  const main = jest.fn((_: State) => rte);
+
+  return [
+    {
+      codec,
+      main,
+    },
+    rte,
+  ] as any;
 }
 
 // -------------------------------------------------------------------------------------

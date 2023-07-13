@@ -1,53 +1,69 @@
 /**
  * ```
- * export interface LambdaState<A> {
+ * export interface State {
  *   appName: string;
  *   logger: L.Logger;
- *   event: A;
  * }
  * ```
  *
  * ```
- * export type Handler<A> = (
- *   state: LambdaState<A>
- * ) => T.Task<[E.Either<Error, void>, LambdaState<A>]>;
+ * export type Main<A> = SRTE.StateReaderTaskEither<
+ *   State,
+ *   A,
+ *   [Error, State],
+ *   void
+ * >;
  * ```
  *
- * This module is used to transform a `Handler<A>` into a function that
+ * ```
+ * export interface Lambda<A> {
+ *   appName?: string;
+ *   logger?: L.Logger;
+ *   codec: Type<A, any, unknown>;
+ *   main: Main<A>;
+ * }
+ * ````
+ *
+ * This module is used to transform a `Lambda<A>` into a function that
  * AWSLambda can call.
  *
- * The handler must return a tuple containing its result and a (possibly
- * changed) state object. If the result is an Either.right, its value is ignored
- * and the handle is believed to have succeeded. If the result is an
- * Either.left, then its value will be captured in Sentry.
+ * The handler contains a main function that is implemented as a
+ * StateReaderTaskEither<State, A, [Error, State], void>. Not that the left type
+ * is also a tuple linking an Error with a new state in the same way that the
+ * right type usually does. This allows the State to be uploaded at some point
+ * during the handler event if it eventually fails.
  *
- * Before the handler is invoke, the input from AWS will be validated using
+ * Before the handler is invoked, the input from AWS will be validated using
  * io-ts. If any validation errors are signaled, the handler will never be
  * called and an exception will be sent to Sentry.
  *
  * @example
- * import * as E from 'fp-ts/lib/Either'
- * import * as T from 'fp-ts/lib/Task';
+ * import * as TE from 'fp-ts/lib/TaskEither'
  * import * as t from 'io-ts';
  *
  * import * as L from 'arena-fp-ts/Lambda';
  *
- * const myCoolHandler: L.Handler<string> = (
- *   state: L.LambdaState<string>
- * ) => T.of([E.left(new Error("I don't do anything")), state]);
+ * const myCoolLambda: L.Lambda<string> = {
+ *   codec: t.string,
+ *   main: (state) => (_event) => TE.left([new Error("oof I don't do anything"), state])
+ * }
  *
- * export const app = L.toLambda('my-cool-handler', t.string, myCoolHandler);
+ * export const app = L.toAWSLambda(myCoolLambda);
  *
  * @since 0.0.1
  */
 
-import { Decoder } from 'io-ts';
+import { Type, Decoder } from 'io-ts';
+import * as t from 'io-ts';
 
 import { flow, pipe } from 'fp-ts/lib/function';
+
 import * as IO from 'fp-ts/lib/IO';
+import * as IOE from 'fp-ts/lib/IOEither';
 import * as TE from 'fp-ts/lib/TaskEither';
 import * as E from 'fp-ts/lib/Either';
 import * as T from 'fp-ts/lib/Task';
+import * as SRTE from 'fp-ts/lib/StateReaderTaskEither';
 
 import * as L from './Logger';
 import * as V from './validator';
@@ -56,6 +72,7 @@ import * as DD from './DataDog';
 
 import { AWSLambda } from '@sentry/serverless';
 import * as AWS from 'aws-lambda';
+import { formatValidationErrors } from 'io-ts-reporters';
 
 // -------------------------------------------------------------------------------------
 // model
@@ -63,11 +80,12 @@ import * as AWS from 'aws-lambda';
 
 /**
  * @category model
- * @since 0.0.1
+ * @since 0.0.6
  */
-export type AWSHandler = AWS.Handler<any, void>;
+export type AWSHandler<A> = AWS.Handler<{ detail: A }, void>;
 
 /**
+ * @deprecated Use State
  * @category model
  * @since 0.0.1
  */
@@ -78,26 +96,58 @@ export interface LambdaState<A> {
 }
 
 /**
- * @category model
+ * @deprecated Use Main<A>
  * @since 0.0.1
  */
 export type Handler<A> = (
   state: LambdaState<A>
 ) => T.Task<readonly [E.Either<Error, void>, LambdaState<A>]>;
 
+/**
+ * @category model
+ * @since 0.0.6
+ */
+export interface State {
+  appName: string;
+  logger: L.Logger;
+}
+
+/**
+ * @category model
+ * @since 0.0.6
+ */
+export type Main<A> = SRTE.StateReaderTaskEither<
+  State,
+  A,
+  [Error, State],
+  void
+>;
+
+/**
+ * @category model
+ * @since 0.0.6
+ */
+export interface Lambda<A> {
+  appName?: string;
+  logger?: L.Logger;
+  codec: Type<A, any, unknown>;
+  main: Main<A>;
+}
+
 // -------------------------------------------------------------------------------------
 // conversions
 // -------------------------------------------------------------------------------------
 
 /**
+ * @deprecated Use toAWSLambda()
  * @category conversions
- * @since 0.0.1
+ * @since 0.0.8
  */
 export function toLambda<A>(
   appName: string,
   codec: Decoder<unknown, A>,
   handler: Handler<A>
-): AWSHandler {
+): AWSHandler<A> {
   // Create logger instance and reporting functions
   const logger = L.makeLogger(appName);
   const debug = L.debug(logger);
@@ -168,5 +218,96 @@ export function toLambda<A>(
     ]);
 
     return T.asUnit(program)();
+  });
+}
+
+/**
+ * @category conversions
+ * @since 0.0.6
+ */
+export function toAWSLambda<A>(lambda: Lambda<A>): AWSHandler<A> {
+  const appName =
+    lambda.appName || process.env.npm_package_config_appName || 'Unnamed App';
+  const logger = lambda.logger || L.makeLogger(appName);
+  const initialState: State = {
+    appName,
+    logger,
+  };
+  const EventCodec = t.type({
+    detail: lambda.codec,
+  });
+
+  const debug = L.debug(logger);
+  const error = L.error(logger);
+  const incrementMetric = (name: string) =>
+    pipe(
+      DD.incrementMetric({
+        metricName: name,
+        extraTags: { app_name: appName },
+      }),
+      T.asUnit
+    );
+
+  const validateInput = (input: unknown): TE.TaskEither<[Error, State], A> =>
+    pipe(
+      debug('Validating Input'),
+      IO.apSecond(() => EventCodec.decode(input)),
+      IOE.map((event) => event.detail),
+      IOE.mapError(formatValidationErrors),
+      IO.tap((result) => {
+        if (E.isLeft(result)) {
+          return error({ errors: result.left }, 'Input Validation Failed');
+        } else {
+          return debug({ result: result.right }, 'Input Validation Succeeded');
+        }
+      }),
+      IOE.mapError(
+        (errors) =>
+          [
+            new Error(`Validation Failed: ${errors.join('; ')}`),
+            initialState,
+          ] as [Error, State]
+      ),
+      TE.fromIOEither
+    );
+
+  const initialize = pipe(
+    debug('Logging Initialized'),
+    IO.tap((_) => Sentry.init(logger))
+  );
+  initialize();
+
+  return AWSLambda.wrapHandler((input: unknown, _context, _callback) => {
+    const program = pipe(
+      TE.fromTask(incrementMetric('start')),
+      TE.apSecond(validateInput(input)),
+      TE.flatMap(lambda.main(initialState)),
+      T.map(E.toUnion),
+      T.flatMapIO(([result, { logger }]) => {
+        const info = L.info(logger);
+        const error = L.error(logger);
+
+        if (result instanceof Error) {
+          return pipe(
+            IO.of(result),
+            IO.tap((err) => error({ err }, 'Lambda failed!')),
+            IO.tap(Sentry.captureException(logger))
+          );
+        } else {
+          return info('Lambda finished successfully');
+        }
+      }),
+      T.apFirst(incrementMetric('end'))
+    );
+
+    return program().catch((err) => {
+      error(
+        { err },
+        `Running the lambda resulted in an exception. This should not be able to happen \
+because the main function should only communicate errors with the Either monad.`
+      );
+      Sentry.captureException(logger)(err)();
+      incrementMetric('end');
+    });
   });
 }

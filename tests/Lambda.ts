@@ -1,14 +1,13 @@
 /* eslint-disable @typescript-eslint/no-empty-function */
-
-import Pino from 'pino';
+import { describe, it, expect, jest, afterEach } from '@jest/globals';
 
 import * as t from 'io-ts';
 
-import * as E from 'fp-ts/lib/Either';
-import * as T from 'fp-ts/lib/Task';
+import * as TE from 'fp-ts/lib/TaskEither';
 import * as TO from 'fp-ts/lib/TaskOption';
 
-import { toLambda } from '../src/Lambda';
+import { toAWSLambda, Lambda } from '../src/Lambda';
+import { mockLambda } from '../src/Jest';
 
 const captureExceptionSpy = jest.fn((_err: any, _context: any) => () => {});
 const sentryInitSpy = jest.fn(() => {});
@@ -29,26 +28,33 @@ jest.mock('@sentry/serverless', () => ({
   },
 }));
 
-const logger = Pino();
-
 const TestEventCodec = t.type({
   foo: t.string,
 });
 
-const validEvent = { detail: { foo: 'bar' } };
-const invalidEvent = { detail: { bar: 'foo' } };
+const validEvent = { foo: 'bar' };
+const invalidEvent = { bar: 'foo' };
 
-const successfulHandler = jest.fn((state) =>
-  T.of([E.right(undefined), { ...state, logger }])
+const [successfulHandler, successfulHandlerSpy] = mockLambda(
+  TestEventCodec,
+  (state) => TE.right([undefined, state])
 );
 
-const unsuccessfulHandler = jest.fn((state) =>
-  T.of([E.left(new Error('test error')), { ...state, logger }])
+const [unsuccessfulHandler, unsuccessfulHandlerSpy] = mockLambda(
+  TestEventCodec,
+  (state) => TE.left([new Error('test error'), state])
 );
 
-const run = (event: unknown, handler: any) => {
-  const fn: any = toLambda('test', TestEventCodec, handler);
-  return expect(fn(event)).resolves.not.toThrow();
+const [incorrectHandler, incorrectHandlerSpy] = mockLambda(
+  TestEventCodec,
+  (_) => () => {
+    throw new Error('test error');
+  }
+);
+
+const run = <A>(event: unknown, handler: Lambda<A>) => {
+  const fn = toAWSLambda(handler);
+  return fn({ detail: event as any }, undefined as any, undefined as any);
 };
 
 describe('toLambda', () => {
@@ -61,7 +67,7 @@ describe('toLambda', () => {
       await run(validEvent, successfulHandler);
 
       // Always
-      expect(successfulHandler).toHaveBeenCalled();
+      expect(successfulHandlerSpy).toHaveBeenCalled();
       expect(incrementMetricSpy).toHaveBeenCalledTimes(2);
       expect(sentryInitSpy).toHaveBeenCalled();
 
@@ -73,7 +79,19 @@ describe('toLambda', () => {
       await run(validEvent, unsuccessfulHandler);
 
       // Always
-      expect(unsuccessfulHandler).toHaveBeenCalled();
+      expect(unsuccessfulHandlerSpy).toHaveBeenCalled();
+      expect(incrementMetricSpy).toHaveBeenCalledTimes(2);
+      expect(sentryInitSpy).toHaveBeenCalled();
+
+      // On error
+      expect(captureExceptionSpy).toHaveBeenCalled();
+    });
+
+    it('when the handler throws an exception', async () => {
+      await run(validEvent, incorrectHandler);
+
+      // Always
+      expect(incorrectHandlerSpy).toHaveBeenCalled();
       expect(incrementMetricSpy).toHaveBeenCalledTimes(2);
       expect(sentryInitSpy).toHaveBeenCalled();
 
@@ -86,7 +104,7 @@ describe('toLambda', () => {
     await run(invalidEvent, successfulHandler);
 
     // Always
-    expect(successfulHandler).not.toHaveBeenCalled();
+    expect(successfulHandlerSpy).not.toHaveBeenCalled();
     expect(incrementMetricSpy).toHaveBeenCalledTimes(2);
     expect(sentryInitSpy).toHaveBeenCalled();
 
