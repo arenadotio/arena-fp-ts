@@ -24,6 +24,7 @@
     "npmrc",
     "pino",
     "processid",
-    "SRTE"
+    "SRTE",
+    "newtype"
   ]
 }
