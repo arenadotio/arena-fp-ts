@@ -271,10 +271,10 @@ export function toAWSLambda<A>(lambda: Lambda<A>): AWSHandler<A> {
       TE.fromIOEither
     );
 
-  const initialize = pipe(
-    debug('Logging Initialized'),
-    IO.tap((_) => Sentry.init(logger))
-  );
+  const initialize = IO.sequenceArray([
+    debug('Logging initialized'),
+    Sentry.init(logger),
+  ]);
   initialize();
 
   return AWSLambda.wrapHandler((input: unknown, _context, _callback) => {

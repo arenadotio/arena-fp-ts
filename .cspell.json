@@ -25,6 +25,7 @@
     "pino",
     "processid",
     "SRTE",
-    "newtype"
+    "newtype",
+    "unlines"
   ]
 }

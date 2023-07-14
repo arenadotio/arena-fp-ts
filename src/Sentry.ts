@@ -53,9 +53,10 @@ export const getNodeOptions: R.Reader<
   NodeOptions
 > = (options?): NodeOptions => ({
   dsn: process.env.SENTRY_DSN,
-  environment: process.env.SENTRY_ENVIRONMENT,
+  environment: process.env.releaseEnv || process.env.PGD_ENVIRONMENT,
+  release: process.env.releaseName || process.env.SENTRY_RELEASE,
   autoSessionTracking: false,
-  debug: !!process.env.SENTRY_DEBUG,
+  debug: true,
   enableTracing: false,
   tracesSampleRate: 0,
   integrations: [
@@ -73,19 +74,22 @@ export const getNodeOptions: R.Reader<
 /**
  * @internal
  */
-export const init =
-  (logger: L.Logger, options?: Partial<NodeOptions>): IO.IO<void> =>
-  () =>
-    pipe(
-      getNodeOptions(options),
-      (options) => ({ ...options, initialScope: { tags: logger.bindings() } }),
-      (options): IO.IO<void> =>
-        () => {
-          _init(options);
-        },
-      IO.apFirst(L.debug(logger)('Sentry initialized'))
-    );
+export const init = (
+  logger: L.Logger,
+  options?: Partial<NodeOptions>
+): IO.IO<void> => {
+  const debug = L.debug(logger);
+  const info = L.info(logger);
 
+  return pipe(
+    getNodeOptions(options),
+    (options) =>
+      IO.of({ ...options, initialScope: { tags: logger.bindings() } }),
+    IO.tap((options) => debug({ options }, 'Initializing Sentry')),
+    IO.tap((options) => () => _init(options)),
+    IO.tap((options) => info({ options }, 'Sentry initialized'))
+  );
+};
 /**
  * @internal
  */
