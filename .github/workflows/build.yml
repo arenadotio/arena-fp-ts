@@ -23,10 +23,10 @@ jobs:
         uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node-version }}
-      - run: yarn install
-      - run: yarn run build
-      - run: yarn run test
-      - run: yarn run lint
+      - run: npm install
+      - run: npm run build
+      - run: npm run test
+      - run: npm run lint
   deploy-docs:
     needs:
       - build
@@ -35,11 +35,11 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2.3.1
       - name: Install
-        run: yarn install
+        run: npm install
       - name: Generate docs
-        run: yarn run docs
+        run: npm run docs
       - name: Spell check
-        run: yarn run spell
+        run: npm run spell
       - name: Deploy
         uses: JamesIves/github-pages-deploy-action@4.0.0
         with:
