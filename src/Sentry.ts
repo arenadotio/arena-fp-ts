@@ -35,6 +35,7 @@ import { RewriteFrames } from '@sentry/integrations';
 import { CaptureContext, Primitive } from '@sentry/types';
 import { pipe } from 'fp-ts/lib/function';
 
+import * as O from 'fp-ts/lib/Option';
 import * as IO from 'fp-ts/lib/IO';
 import * as RIO from 'fp-ts/lib/ReaderIO';
 import * as R from 'fp-ts/lib/Reader';
@@ -81,13 +82,22 @@ export const init = (
   const debug = L.debug(logger);
   const info = L.info(logger);
 
+  const doInit = (options: NodeOptions): IO.IO<void> =>
+    pipe(
+      IO.of(options),
+      IO.tap((options) => debug({ options }, 'Initializing Sentry')),
+      IO.tap((options) => () => _init(options)),
+      IO.tap((options) => info({ options }, 'Sentry initialized'))
+    );
+
   return pipe(
     getNodeOptions(options),
-    (options) =>
-      IO.of({ ...options, initialScope: { tags: logger.bindings() } }),
-    IO.tap((options) => debug({ options }, 'Initializing Sentry')),
-    IO.tap((options) => () => _init(options)),
-    IO.tap((options) => info({ options }, 'Sentry initialized'))
+    O.fromPredicate((options) => !!options.dsn),
+    O.map((options) => ({
+      ...options,
+      initialScope: { tags: logger.bindings() },
+    })),
+    O.fold(() => debug('No DSN found. Skipping Sentry initialization'), doInit)
   );
 };
 /**
