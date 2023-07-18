@@ -53,9 +53,6 @@ export const getNodeOptions: R.Reader<
   Partial<NodeOptions> | undefined,
   NodeOptions
 > = (options?): NodeOptions => ({
-  dsn: process.env.SENTRY_DSN,
-  environment: process.env.releaseEnv || process.env.PGD_ENVIRONMENT,
-  release: process.env.releaseName || process.env.SENTRY_RELEASE,
   autoSessionTracking: false,
   debug: true,
   enableTracing: false,

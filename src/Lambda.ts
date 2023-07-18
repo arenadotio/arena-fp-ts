@@ -130,6 +130,9 @@ export type Main<A> = SRTE.StateReaderTaskEither<
 export interface Lambda<A> {
   appName?: string;
   logger?: L.Logger;
+  sentryDsn?: string;
+  sentryEnvironment?: string;
+  sentryRelease?: string;
   codec: Type<A, any, unknown>;
   main: Main<A>;
 }
@@ -273,7 +276,11 @@ export function toAWSLambda<A>(lambda: Lambda<A>): AWSHandler<A> {
 
   const initialize = IO.sequenceArray([
     debug('Logging initialized'),
-    Sentry.init(logger),
+    Sentry.init(logger, {
+      dsn: lambda.sentryDsn,
+      release: lambda.sentryRelease,
+      environment: lambda.sentryEnvironment,
+    }),
   ]);
   initialize();
 

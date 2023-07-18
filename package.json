@@ -1,7 +1,7 @@
 {
   "name": "arena-fp-ts",
   "homepage": "https://github.com/arenadotio/arena-fp-ts",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "main": "dist/index.js",
   "license": "MIT",
   "repository": {
@@ -74,7 +74,7 @@
   },
   "scripts": {
     "build": "rm -rf ./dist && mkdir -p ./dist/esm ./dist/cjs/ && tsc -p ./tsconfig.build-esm.json && tsc -p ./tsconfig.build-cjs.json && tsc -p ./tsconfig.build-types.json",
-    "format": "yarn run prettier --write .",
+    "format": "prettier --write .",
     "lint": "eslint ./src/ ./tests/ --ext ts",
     "test": "jest",
     "docs": "docs-ts",
