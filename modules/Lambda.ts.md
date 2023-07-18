@@ -122,6 +122,9 @@ Added in v0.0.6
 export interface Lambda<A> {
   appName?: string
   logger?: L.Logger
+  sentryDsn?: string
+  sentryEnvironment?: string
+  sentryRelease?: string
   codec: Type<A, any, unknown>
   main: Main<A>
 }
