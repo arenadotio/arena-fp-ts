@@ -26,6 +26,8 @@
     "processid",
     "SRTE",
     "newtype",
-    "unlines"
+    "unlines",
+    "compactable",
+    "streamable"
   ]
 }
