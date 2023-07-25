@@ -5,22 +5,14 @@ on:
     types:
       - published
 jobs:
-  install-deps:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-node@v1
-        with:
-          node-version: 18
-      - run: npm clean-install
   build:
     runs-on: ubuntu-latest
-    needs: install-deps
     steps:
       - uses: actions/checkout@v1
       - uses: actions/setup-node@v1
         with:
           node-version: 18
+      - run: npm ci
       - run: npm run build
   publish:
     runs-on: ubuntu-latest
