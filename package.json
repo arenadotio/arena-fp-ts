@@ -80,7 +80,7 @@
     "docs": "docs-ts",
     "spell": "cspell '**/*.*'",
     "md": "markdown",
-    "prepublish": "yarn build"
+    "prepublish": "npm run build"
   },
   "pre-commit": [
     "format",
