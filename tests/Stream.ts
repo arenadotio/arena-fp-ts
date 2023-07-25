@@ -12,7 +12,7 @@ jest.setTimeout(5000);
 
 describe(Stream.map, () => {
   it.prop([fc.array(fc.integer())])(
-    'can convert to an from an array',
+    'can convert to and from an array',
     async (arr) => {
       const result = await pipe(Stream.fromIterable(arr), Stream.toArray, (f) =>
         f()
