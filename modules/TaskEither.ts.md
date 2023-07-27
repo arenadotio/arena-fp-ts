@@ -1,6 +1,6 @@
 ---
 title: TaskEither.ts
-nav_order: 9
+nav_order: 10
 parent: Modules
 ---
 
@@ -54,7 +54,7 @@ Added in v0.0.7
 **Signature**
 
 ```ts
-export declare const tryCatch: <A>(f: LazyArg<Promise<A>>) => TE.TaskEither<Error, A>
+export declare const tryCatch: <A>(f: LazyArg<Promise<A>>) => TaskEither<A>
 ```
 
 Added in v0.0.7

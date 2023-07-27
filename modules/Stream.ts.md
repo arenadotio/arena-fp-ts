@@ -1,6 +1,6 @@
 ---
 title: Stream.ts
-nav_order: 8
+nav_order: 9
 parent: Modules
 ---
 
@@ -20,6 +20,7 @@ Added in v0.0.10
   - [from](#from)
   - [fromArrayLike](#fromarraylike)
   - [fromIterable](#fromiterable)
+  - [lazy](#lazy)
 - [conversions](#conversions)
   - [fromTaskEither](#fromtaskeither)
   - [of](#of)
@@ -84,7 +85,7 @@ Added in v0.0.10
 export declare const from: <A>(a: Streamable<A>) => Stream<A>
 ```
 
-Added in v0.0.1
+Added in v0.0.10
 
 ## fromArrayLike
 
@@ -102,6 +103,21 @@ Added in v0.0.10
 
 ```ts
 export declare const fromIterable: <A>(a: Iterable<A>) => Stream<A>
+```
+
+Added in v0.0.10
+
+## lazy
+
+**Signature**
+
+```ts
+export declare function lazy<A, B extends Streamable<A>>(
+  f: (previousResult: O.Option<B>) => TO.TaskOption<B>
+): Stream<A>
+export declare function lazy<E, A, B extends Streamable<A>>(
+  f: (previousResult: O.Option<B>) => TE.TaskEither<E, O.Option<B>>
+): Stream<E.Either<E, A>>
 ```
 
 Added in v0.0.10
@@ -491,9 +507,7 @@ Added in v0.0.10
 **Signature**
 
 ```ts
-export declare const ap: <A>(
-  fa: Stream<A>
-) => <B>(fab: Stream<(a: A) => B | Promise<B>>) => { [Symbol.asyncIterator](): AsyncGenerator<B, void, unknown> }
+export declare const ap: <A>(fa: Stream<A>) => <B>(fab: Stream<(a: A) => B | Promise<B>>) => Stream<B>
 ```
 
 Added in v0.0.10
