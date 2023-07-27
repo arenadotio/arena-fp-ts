@@ -51,7 +51,5 @@ export const flatMapValidation =
  * @category utils
  * @since 0.0.7
  */
-export const tryCatch = <A>(f: LazyArg<Promise<A>>) =>
-  TE.tryCatch(f, (err) =>
-    err instanceof Error ? err : new Error(String(err))
-  );
+export const tryCatch = <A>(f: LazyArg<Promise<A>>): TaskEither<A> =>
+  TE.tryCatch(f, E.toError);
