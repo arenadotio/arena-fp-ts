@@ -37,4 +37,5 @@ export const fromValidation: <A>(ma: Validation<A>) => Either<A> = flow(
  * @category utils
  * @since 0.0.10
  */
-export const tryCatch = <A>(f: LazyArg<A>) => E.tryCatch(f, E.toError);
+export const tryCatch = <A>(f: LazyArg<A>): Either<A> =>
+  E.tryCatch(f, E.toError);

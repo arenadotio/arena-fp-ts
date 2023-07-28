@@ -16,6 +16,7 @@ import { Refinement } from 'fp-ts/lib/Refinement';
 import * as T from 'fp-ts/lib/Task';
 import * as TE from 'fp-ts/lib/TaskEither';
 import * as O from 'fp-ts/lib/Option';
+import * as TO from 'fp-ts/lib/TaskOption';
 import * as E from 'fp-ts/lib/Either';
 import * as A from 'fp-ts/lib/Array';
 import {
@@ -32,6 +33,7 @@ import { FunctorWithIndex1 } from 'fp-ts/lib/FunctorWithIndex';
 import { Zero1 } from 'fp-ts/lib/Zero';
 import { Semigroup } from 'fp-ts/lib/Semigroup';
 import { Monoid } from 'fp-ts/lib/Monoid';
+import { isEither } from './Refinements';
 
 /**
  * @category type lambdas
@@ -115,9 +117,7 @@ export const isStream = <A = unknown>(a: unknown): a is Stream<A> =>
  */
 export const fromIterable = <A>(a: Iterable<A>): Stream<A> => ({
   async *[Symbol.asyncIterator]() {
-    for (const x of a) {
-      yield x;
-    }
+    yield* a;
   },
 });
 
@@ -135,7 +135,7 @@ export const fromArrayLike = <A>(a: ArrayLike<A>): Stream<A> => ({
 
 /**
  * @category constructors
- * @since 0.0.1
+ * @since 0.0.10
  */
 export const from = <A>(a: Streamable<A>): Stream<A> => {
   if (isArray(a)) return fromIterable(a);
@@ -143,6 +143,62 @@ export const from = <A>(a: Streamable<A>): Stream<A> => {
   if (isArrayLike(a)) return fromArrayLike(a);
   return a; // Already an AsyncIterable
 };
+
+/**
+ * @category constructors
+ * @since 0.0.10
+ */
+export function lazy<A, B extends Streamable<A>>(
+  f: (previousResult: O.Option<B>) => TO.TaskOption<B>
+): Stream<A>;
+export function lazy<E, A, B extends Streamable<A>>(
+  f: (previousResult: O.Option<B>) => TE.TaskEither<E, O.Option<B>>
+): Stream<E.Either<E, A>>;
+export function lazy<E, A, B extends Streamable<A>>(
+  f: (
+    previousResult: O.Option<B>
+  ) => TO.TaskOption<B> | TE.TaskEither<E, O.Option<B>>
+): Stream<E.Either<E, A> | A> {
+  return {
+    async *[Symbol.asyncIterator]() {
+      let previousResult: O.Option<B> = O.none;
+      do {
+        // Use previousResult to fetch the next streamable
+        const fetchNext = f(previousResult);
+        const result = await fetchNext();
+
+        // check for error
+        if (isEither(result) && E.isLeft(result)) {
+          // communicate error by yielding the left
+          yield result;
+          // Nothing more to stream
+          return;
+        }
+
+        // Set previousResult
+        if (isEither(result)) {
+          previousResult = result.right;
+        } else {
+          previousResult = result;
+        }
+
+        if (O.isSome(previousResult)) {
+          // If result is Either, then map values in the result to Rights.
+          // Otherwise, yield the results directly
+          const mapValues: (a: A) => E.Either<E, A> | A = isEither(result)
+            ? E.right<E, A>
+            : identity;
+
+          // Use mapValues to create a new stream of values
+          const stream = pipe(from(previousResult.value), map(mapValues));
+
+          // yield values
+          yield* stream;
+        }
+      } while (O.isSome(previousResult));
+    },
+  };
+}
 
 // -------------------------------------------------------------------------------------
 // conversions
@@ -430,7 +486,7 @@ export const separate = <A, B>(
  * @since 0.0.10
  */
 export const ap = <A>(fa: Stream<A>) => {
-  return <B>(fab: Stream<(a: A) => B | Promise<B>>) => ({
+  return <B>(fab: Stream<(a: A) => B | Promise<B>>): Stream<B> => ({
     async *[Symbol.asyncIterator]() {
       for await (const a of fa) {
         for await (const f of fab) {
