@@ -10,6 +10,10 @@ parent: Modules
 type Stream<T> = AsyncIterable<T>
 ```
 
+This module provides a monadic interface over AsyncIterables. Unlike other
+collections, the elements of a Stream are not all stored in memory at the
+same time.
+
 Added in v0.0.10
 
 ---
