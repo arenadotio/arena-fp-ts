@@ -3,6 +3,10 @@
  * type Stream<T> = AsyncIterable<T>;
  * ```
  *
+ * This module provides a monadic interface over AsyncIterables. Unlike other
+ * collections, the elements of a Stream are not all stored in memory at the
+ * same time.
+ *
  * @since 0.0.10
  */
 
@@ -34,6 +38,8 @@ import { Zero1 } from 'fp-ts/lib/Zero';
 import { Semigroup } from 'fp-ts/lib/Semigroup';
 import { Monoid } from 'fp-ts/lib/Monoid';
 import { isEither } from './Refinements';
+
+import { Mutex } from 'async-mutex';
 
 /**
  * @category type lambdas
@@ -115,7 +121,7 @@ export const isStream = <A = unknown>(a: unknown): a is Stream<A> =>
  * @category constructors
  * @since 0.0.10
  */
-export const fromIterable = <A>(a: Iterable<A>): Stream<A> => ({
+export const fromIterable = <A>(a: Iterable<A>): Stream<A> => /*#__PURE__*/ ({
   async *[Symbol.asyncIterator]() {
     yield* a;
   },
@@ -125,7 +131,7 @@ export const fromIterable = <A>(a: Iterable<A>): Stream<A> => ({
  * @category constructors
  * @since 0.0.10
  */
-export const fromArrayLike = <A>(a: ArrayLike<A>): Stream<A> => ({
+export const fromArrayLike = <A>(a: ArrayLike<A>): Stream<A> => /*#__PURE__*/ ({
   async *[Symbol.asyncIterator]() {
     for (let i = 0; i < a.length; i++) {
       yield a[i];
@@ -137,7 +143,7 @@ export const fromArrayLike = <A>(a: ArrayLike<A>): Stream<A> => ({
  * @category constructors
  * @since 0.0.10
  */
-export const from = <A>(a: Streamable<A>): Stream<A> => {
+export const from = <A>(a: Streamable<A>): Stream<A> => /*#__PURE__*/ {
   if (isArray(a)) return fromIterable(a);
   if (isIterable(a)) return fromIterable(a);
   if (isArrayLike(a)) return fromArrayLike(a);
@@ -158,7 +164,7 @@ export function lazy<E, A, B extends Streamable<A>>(
   f: (
     previousResult: O.Option<B>
   ) => TO.TaskOption<B> | TE.TaskEither<E, O.Option<B>>
-): Stream<E.Either<E, A> | A> {
+): Stream<E.Either<E, A> | A> /*#__PURE__*/ {
   return {
     async *[Symbol.asyncIterator]() {
       let previousResult: O.Option<B> = O.none;
@@ -208,7 +214,7 @@ export function lazy<E, A, B extends Streamable<A>>(
  * @category conversions
  * @since 0.0.10
  */
-export const of = <A>(a: A): Stream<A> => ({
+export const of = <A>(a: A): Stream<A> => /*#__PURE__*/ ({
   async *[Symbol.asyncIterator]() {
     yield a;
   },
@@ -220,7 +226,7 @@ export const of = <A>(a: A): Stream<A> => ({
  */
 export const fromTaskEither = <E, A>(
   ma: TE.TaskEither<E, Streamable<A>>
-): Stream<E.Either<E, A>> => ({
+): Stream<E.Either<E, A>> => /*#__PURE__*/ ({
   async *[Symbol.asyncIterator]() {
     const either = await ma();
     if (E.isLeft(either)) {
@@ -237,7 +243,7 @@ export const fromTaskEither = <E, A>(
  */
 export const toArray =
   <A>(fa: Stream<A>): T.Task<Array<A>> =>
-  async () => {
+  async () => /*#__PURE__*/ {
     const arr: A[] = [];
     for await (const a of fa) {
       arr.push(a);
@@ -251,7 +257,8 @@ export const toArray =
  */
 export const toEitherArray = <E, A>(
   fa: Stream<E.Either<E, A>>
-): TE.TaskEither<E, A[]> => pipe(toArray(fa), T.map(A.sequence(E.Applicative)));
+): TE.TaskEither<E, A[]> =>
+  /*#__PURE__*/ pipe(toArray(fa), T.map(A.sequence(E.Applicative)));
 
 // -------------------------------------------------------------------------------------
 // mapping
@@ -263,7 +270,7 @@ export const toEitherArray = <E, A>(
  */
 export const mapWithIndex: <A, B>(
   f: (i: number, a: A) => B
-) => (fa: Stream<A>) => Stream<B> = (f) => (fa) => ({
+) => (fa: Stream<A>) => Stream<B> = (f) => (fa) => /*#__PURE__*/ ({
   async *[Symbol.asyncIterator]() {
     let i = 0;
     for await (const a of fa) {
@@ -278,6 +285,7 @@ export const mapWithIndex: <A, B>(
  * @since 0.0.10
  */
 export const map: <A, B>(f: (a: A) => B) => (fa: Stream<A>) => Stream<B> =
+  /*#__PURE__*/
   (f) => (fa) =>
     pipe(
       fa,
@@ -288,7 +296,7 @@ export const map: <A, B>(f: (a: A) => B) => (fa: Stream<A>) => Stream<B> =
  * @category sequencing
  * @since 0.0.10
  */
-export const flatMap = <A, B>(f: (a: A) => Stream<B>) => {
+export const flatMap = <A, B>(f: (a: A) => Stream<B>) => /*#__PURE__*/ {
   return (fa: Stream<A>): Stream<B> => ({
     async *[Symbol.asyncIterator]() {
       for await (const a of fa) {
@@ -302,7 +310,9 @@ export const flatMap = <A, B>(f: (a: A) => Stream<B>) => {
  * @category sequencing
  * @since 0.0.10
  */
-export const flatten = <A>(mma: Stream<Stream<A>>): Stream<A> => ({
+export const flatten = <A>(
+  mma: Stream<Stream<A>>
+): Stream<A> => /*#__PURE__*/ ({
   async *[Symbol.asyncIterator]() {
     for await (const ma of mma) {
       yield* ma;
@@ -329,18 +339,21 @@ export const filterWithIndex: {
     as: Stream<A>
   ) => Stream<A>;
 } =
-  <A>(predicate: PredicateWithIndex<number, A>) =>
-  (fa: Stream<A>) => ({
-    async *[Symbol.asyncIterator]() {
-      let i = 0;
-      for await (const a of fa) {
-        if (predicate(i, a)) {
-          yield a;
+  /*#__PURE__*/
+
+
+    <A>(predicate: PredicateWithIndex<number, A>) =>
+    (fa: Stream<A>) => ({
+      async *[Symbol.asyncIterator]() {
+        let i = 0;
+        for await (const a of fa) {
+          if (predicate(i, a)) {
+            yield a;
+          }
+          i++;
         }
-        i++;
-      }
-    },
-  });
+      },
+    });
 
 /**
  * @category filtering
@@ -377,7 +390,8 @@ export const filterMapWithIndex =
  */
 export const filterMap: <A, B>(
   f: (a: A) => O.Option<B>
-) => (fa: Stream<A>) => Stream<B> = (f) => filterMapWithIndex((_, a) => f(a));
+) => /*#__PURE__*/ (fa: Stream<A>) => Stream<B> = (f) =>
+  filterMapWithIndex((_, a) => f(a));
 
 /**
  * @category filtering
@@ -394,11 +408,16 @@ export const partitionWithIndex: {
     as: Stream<A>
   ) => Separated<Stream<A>, Stream<A>>;
 } =
-  <A>(f: PredicateWithIndex<number, A>) =>
-  (fa: Stream<A>) => ({
-    left: filterWithIndex((i: number, a: A) => !f(i, a))(fa),
-    right: filterWithIndex(f)(fa),
-  });
+  /*#__PURE__*/
+
+
+    <A>(f: PredicateWithIndex<number, A>) =>
+    (fa: Stream<A>) =>
+      pipe(
+        fa,
+        mapWithIndex((i, a) => (f(i, a) ? E.right(a) : E.left(a))),
+        separate
+      );
 
 /**
  * @category filtering
@@ -417,7 +436,7 @@ export const partition: {
 } = <A>(
   predicate: Predicate<A>
 ): ((as: Stream<A>) => Separated<Stream<A>, Stream<A>>) =>
-  partitionWithIndex((_, a) => predicate(a));
+  /*#__PURE__*/ partitionWithIndex((_, a) => predicate(a));
 
 /**
  * @category filtering
@@ -425,22 +444,8 @@ export const partition: {
  */
 export const partitionMapWithIndex =
   <A, B, C>(f: (i: number, a: A) => E.Either<B, C>) =>
-  (fa: Stream<A>): Separated<Stream<B>, Stream<C>> => ({
-    left: pipe(
-      fa,
-      filterMapWithIndex((i, a) =>
-        pipe(
-          f(i, a),
-          O.fromPredicate(E.isLeft),
-          O.map((e) => e.left)
-        )
-      )
-    ),
-    right: pipe(
-      fa,
-      filterMapWithIndex((i, a) => pipe(f(i, a), O.fromEither))
-    ),
-  });
+  (fa: Stream<A>): Separated<Stream<B>, Stream<C>> =>
+    /*#__PURE__*/ pipe(fa, mapWithIndex(f), separate);
 
 /**
  * @category filtering
@@ -449,7 +454,7 @@ export const partitionMapWithIndex =
 export const partitionMap: <A, B, C>(
   f: (a: A) => E.Either<B, C>
 ) => (fa: Stream<A>) => Separated<Stream<B>, Stream<C>> = (f) =>
-  partitionMapWithIndex((_, a) => f(a));
+  /*#__PURE__*/ partitionMapWithIndex((_, a) => f(a));
 
 /**
  * @category filtering
@@ -464,18 +469,74 @@ export const compact: <A>(fa: Stream<O.Option<A>>) => Stream<A> =
  */
 export const separate = <A, B>(
   fa: Stream<E.Either<A, B>>
-): Separated<Stream<A>, Stream<B>> => ({
-  left: pipe(
-    fa,
-    filter(E.isLeft),
-    map((e) => e.left)
-  ),
-  right: pipe(
-    fa,
-    filter(E.isRight),
-    map((e) => e.right)
-  ),
-});
+): Separated<Stream<A>, Stream<B>> => /*#__PURE__*/ {
+  const cache: E.Either<A, B>[] = [];
+  const it = fa[Symbol.asyncIterator]();
+  const lock = new Mutex();
+
+  const findNext = <C extends E.Either<A, B>>(
+    refinement: Refinement<E.Either<A, B>, C>
+  ): Promise<O.Option<C>> =>
+    lock.runExclusive(async (): Promise<O.Option<C>> => {
+      for (let idx = 0; idx < cache.length; idx++) {
+        // avoiding cache.findIndx to make it easier for tsc to recognize the
+        // refinement.
+        const cur = cache[idx];
+        if (refinement(cur)) {
+          cache.splice(idx, 1);
+          return O.some(cur);
+        }
+      }
+
+      let cur: IteratorResult<E.Either<A, B>> = await it.next();
+      while (!cur.done) {
+        if (refinement(cur.value)) {
+          return O.some(cur.value);
+        }
+
+        cache.push(cur.value);
+        cur = await it.next();
+      }
+
+      return O.none;
+    });
+
+  const returnFn = async <C>(value?: C) => {
+    cache.splice(0, cache.length);
+    return { done: true, value };
+  };
+
+  const buildIterator = <C extends E.Either<A, B>, D>(
+    refinement: Refinement<E.Either<A, B>, C>,
+    getter: (c: C) => D
+  ): AsyncIterator<D> => ({
+    next: async (..._args) => {
+      const a = await findNext(refinement);
+      if (O.isSome(a)) {
+        return {
+          done: false,
+          value: getter(a.value),
+        };
+      } else {
+        return {
+          done: true,
+          value: undefined,
+        };
+      }
+    },
+    return: returnFn,
+    throw: returnFn,
+  });
+
+  return {
+    left: {
+      [Symbol.asyncIterator]: () => buildIterator(E.isLeft, (e) => e.left),
+    },
+    right: {
+      [Symbol.asyncIterator]: () => buildIterator(E.isRight, (e) => e.right),
+    },
+  };
+};
 
 // -------------------------------------------------------------------------------------
 // utils
@@ -485,7 +546,7 @@ export const separate = <A, B>(
  * @category utils
  * @since 0.0.10
  */
-export const ap = <A>(fa: Stream<A>) => {
+export const ap = <A>(fa: Stream<A>) => /*#__PURE__*/ {
   return <B>(fab: Stream<(a: A) => B | Promise<B>>): Stream<B> => ({
     async *[Symbol.asyncIterator]() {
       for await (const a of fa) {
@@ -501,25 +562,32 @@ export const ap = <A>(fa: Stream<A>) => {
  * @category utils
  * @since 0.0.10
  */
-export const zero: <A>() => Stream<A> = <A>() => fromIterable<A>([]);
+export const zero: <A>() => Stream<A> = <A>() =>
+  /*#__PURE__*/ fromIterable<A>([]);
 
 /**
  * @category utils
  * @since 0.0.10
  */
 export const prependAll =
-  <A>(more: Stream<A>) =>
-  (ma: Stream<A>): Stream<A> =>
-    getSemigroup<A>().concat(more, ma);
+  /*#__PURE__*/
+
+
+    <A>(more: Stream<A>) =>
+    (ma: Stream<A>): Stream<A> =>
+      getSemigroup<A>().concat(more, ma);
 
 /**
  * @category utils
  * @since 0.0.10
  */
 export const appendAll =
-  <A>(more: Stream<A>) =>
-  (ma: Stream<A>): Stream<A> =>
-    getSemigroup<A>().concat(ma, more);
+  /*#__PURE__*/
+
+
+    <A>(more: Stream<A>) =>
+    (ma: Stream<A>): Stream<A> =>
+      getSemigroup<A>().concat(ma, more);
 
 // -------------------------------------------------------------------------------------
 // instances
