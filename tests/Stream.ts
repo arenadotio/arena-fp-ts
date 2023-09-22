@@ -4,11 +4,13 @@ import { it } from '@fast-check/jest';
 
 import * as Stream from '../src/Stream';
 import * as fc from 'fast-check';
-import { pipe } from 'fp-ts/lib/function';
+import { identity, pipe } from 'fp-ts/lib/function';
 
 import * as TE from 'fp-ts/lib/TaskEither';
+import * as T from 'fp-ts/lib/Task';
 import * as E from 'fp-ts/lib/Either';
 import * as O from 'fp-ts/lib/Option';
+import * as A from 'fp-ts/lib/Array';
 
 jest.setTimeout(5000);
 
@@ -150,6 +152,32 @@ describe(Stream.map, () => {
       );
 
       expect(result).toEqualLeft(expected);
+    }
+  );
+});
+
+describe(Stream.separate, () => {
+  it.prop([fc.array(fc.integer({ min: 1 }))])(
+    'it can separate a stream of Either',
+    async (arr) => {
+      const expected = pipe(
+        arr,
+        A.partitionMap(E.fromPredicate((i) => i % 2 === 0, identity))
+      );
+
+      const { left, right } = pipe(
+        Stream.from(arr),
+        Stream.map(E.fromPredicate((i) => i % 2 === 0, identity)),
+        Stream.separate
+      );
+
+      const result = await pipe(
+        T.sequenceArray([Stream.toArray(left), Stream.toArray(right)]),
+        T.map(([left, right]) => ({ left, right })),
+        (f) => f()
+      );
+
+      expect(result).toStrictEqual(expected);
     }
   );
 });

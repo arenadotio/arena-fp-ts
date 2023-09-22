@@ -1,7 +1,7 @@
 {
   "name": "arena-fp-ts",
   "homepage": "https://github.com/arenadotio/arena-fp-ts",
-  "version": "0.0.11",
+  "version": "0.0.12",
   "main": "dist/index.js",
   "license": "MIT",
   "repository": {
@@ -36,6 +36,7 @@
   },
   "dependencies": {
     "@relmify/jest-fp-ts": "^2.1.1",
+    "async-mutex": "^0.4.0",
     "fp-ts-contrib": "^0.1.29",
     "fp-ts-std": "^0.17.1",
     "jest-matcher-utils": "^29.6.1",
