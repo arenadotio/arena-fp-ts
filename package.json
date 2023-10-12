@@ -1,7 +1,7 @@
 {
   "name": "arena-fp-ts",
   "homepage": "https://github.com/arenadotio/arena-fp-ts",
-  "version": "0.0.12",
+  "version": "0.0.13",
   "main": "dist/index.js",
   "license": "MIT",
   "repository": {
@@ -14,6 +14,11 @@
       "require": "./dist/cjs/*.js",
       "import": "./dist/esm/*.js"
     }
+  },
+  "browser": {
+    "arena-fp-ts/Logger": false,
+    "arena-fp-ts/Lambda": false,
+    "arena-fp-ts/Sentry": false
   },
   "typesVersions": {
     "*": {
