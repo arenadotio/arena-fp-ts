@@ -81,14 +81,15 @@
     "typescript": "^5.1.6"
   },
   "scripts": {
+    "version": "changeset version",
+    "release": "npm run build && changeset publish",
     "build": "rm -rf ./dist && mkdir -p ./dist/esm ./dist/cjs/ && tsc -p ./tsconfig.build-esm.json && tsc -p ./tsconfig.build-cjs.json && tsc -p ./tsconfig.build-types.json",
     "format": "prettier --write .",
     "lint": "eslint ./src/ ./tests/ --ext ts",
     "test": "jest",
     "docs": "docs-ts",
     "spell": "cspell '**/*.*'",
-    "md": "markdown",
-    "prepublish": "npm run build"
+    "md": "markdown"
   },
   "pre-commit": [
     "format",
